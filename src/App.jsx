@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DinoGame from "./DinoGame";
 import {
   FaJava,
@@ -14,13 +14,22 @@ import {
   SiPostgresql,
   SiVite,
   SiCplusplus,
-  SiDocker
+  SiDocker,
 } from "react-icons/si";
 
 function App() {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
   const [cursorActive, setCursorActive] = useState(false);
+
+  const cursorInfoRef = useRef({
+    x: 0,
+    y: 0,
+    visible: false,
+  });
+
+  const cursorActiveRef = useRef(false);
+  const lastTechHoverRef = useRef(null);
 
   useEffect(() => {
     let targetX = 0;
@@ -29,44 +38,121 @@ function App() {
     let currentY = 0;
     let animationFrame;
 
+    const clearTechHover = (element) => {
+      if (!element) return;
+
+      const relatedElements = [
+        element,
+        element.previousElementSibling,
+        element.previousElementSibling?.previousElementSibling,
+        element.nextElementSibling,
+        element.nextElementSibling?.nextElementSibling,
+      ];
+
+      relatedElements.forEach((item) => {
+        item?.classList.remove("tech-hovered", "tech-near", "tech-far");
+      });
+    };
+
+    const applyTechHover = (element) => {
+      if (!element) return;
+
+      element.classList.add("tech-hovered");
+
+      element.previousElementSibling?.classList.add("tech-near");
+      element.nextElementSibling?.classList.add("tech-near");
+
+      element.previousElementSibling?.previousElementSibling?.classList.add("tech-far");
+      element.nextElementSibling?.nextElementSibling?.classList.add("tech-far");
+    };
+
+    const updateElementUnderCursor = () => {
+      const { x, y, visible } = cursorInfoRef.current;
+
+      if (!visible) return;
+
+      const elementUnderCursor = document.elementFromPoint(x, y);
+
+      const hoverTarget = elementUnderCursor?.closest(
+          "a, button, .dino-game, .tech-track span"
+      );
+
+      const techTarget = hoverTarget?.matches(".tech-track span")
+          ? hoverTarget
+          : null;
+
+      if (lastTechHoverRef.current !== techTarget) {
+        clearTechHover(lastTechHoverRef.current);
+
+        if (techTarget) {
+          applyTechHover(techTarget);
+        }
+
+        lastTechHoverRef.current = techTarget;
+      }
+
+      const nextCursorActive = Boolean(hoverTarget);
+
+      if (cursorActiveRef.current !== nextCursorActive) {
+        cursorActiveRef.current = nextCursorActive;
+        setCursorActive(nextCursorActive);
+      }
+    };
+
     const moveCursor = (event) => {
       targetX = event.clientX;
       targetY = event.clientY;
 
+      cursorInfoRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+        visible: true,
+      };
+
       setCursorPosition({ x: event.clientX, y: event.clientY });
       setCursorVisible(true);
-      setCursorActive(Boolean(event.target.closest("a, button, .dino-game")));
     };
 
-    const animateGlow = () => {
+    const animate = () => {
       currentX += (targetX - currentX) * 0.03;
       currentY += (targetY - currentY) * 0.03;
 
       document.documentElement.style.setProperty("--glow-x", `${currentX}px`);
       document.documentElement.style.setProperty("--glow-y", `${currentY}px`);
 
-      animationFrame = requestAnimationFrame(animateGlow);
+      updateElementUnderCursor();
+
+      animationFrame = requestAnimationFrame(animate);
     };
 
     const hideCursor = () => {
+      cursorInfoRef.current.visible = false;
+
       setCursorVisible(false);
       setCursorActive(false);
+
+      cursorActiveRef.current = false;
+
+      clearTechHover(lastTechHoverRef.current);
+      lastTechHoverRef.current = null;
     };
 
     window.addEventListener("pointermove", moveCursor);
     window.addEventListener("pointerleave", hideCursor);
 
-    animateGlow();
+    animate();
 
     return () => {
       window.removeEventListener("pointermove", moveCursor);
       window.removeEventListener("pointerleave", hideCursor);
       cancelAnimationFrame(animationFrame);
+
+      clearTechHover(lastTechHoverRef.current);
     };
   }, []);
 
   const cursorClassName = `custom-cursor ${cursorVisible ? "visible" : ""} ${
-    cursorActive ? "active" : ""
+      cursorActive ? "active" : ""
   }`;
 
   return (
@@ -87,227 +173,229 @@ function App() {
             }}
         ></div>
 
-      <main className="page">
-        <section className="hero-grid">
-          <div className="terminal">
-            <div className="terminal-header">
-              <div className="buttons">
-                <span></span>
-                <span></span>
-                <span></span>
+        <main className="page">
+          <section className="hero-grid">
+            <div className="terminal">
+              <div className="terminal-header">
+                <div className="buttons">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <p>Hunter Lynch · Portfolio</p>
               </div>
-              <p>Hunter Lynch · Portfolio</p>
-            </div>
 
-            <div className="terminal-body">
-              <p className="label">About</p>
+              <div className="terminal-body">
+                <p className="label">About</p>
 
-              <h1>Hunter Lynch</h1>
-              <h2>Software Engineering Student</h2>
+                <h1>Hunter Lynch</h1>
+                <h2>Software Engineering Student</h2>
 
-              <p className="text">
-                Hi, I'm Hunter, a Computer Science and Mathematics student at the University of Otago, with a focus on
-                backend development, Java, Spring Boot, databases, and practical full stack systems. I grew up primarily
-                in Gisborne, New Zealand, and outside of my career I am a keen surfer who enjoys meeting new people and
-                staying active. I'm currently seeking software engineering internships for the 2026/27 summer.
-              </p>
+                <p className="text">
+                  Hi, I'm Hunter, a Computer Science and Mathematics student at the University of Otago, with a focus on
+                  backend development, Java, Spring Boot, databases, and practical full stack systems. I grew up primarily
+                  in Gisborne, New Zealand, and outside of my career I am a keen surfer who enjoys meeting new people and
+                  staying active. I'm currently seeking software engineering internships for the 2026/27 summer.
+                </p>
 
-              <p className="label">Focus</p>
+                <p className="label">Focus</p>
 
-              <p className="text">
-                Backend systems, data structures and algorithms, database design, and clean API
-                development.
-              </p>
+                <p className="text">
+                  Backend systems, data structures and algorithms, database design, and clean API
+                  development.
+                </p>
 
-              <div className="actions">
-                <a
-                    href="/Resume.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="resume-btn"
-                >
-                  View Resume
-                </a>
-                <a href="#projects">Projects</a>
-                <a href="#skills">Skills</a>
-                <a href="#contact">Contact</a>
+                <div className="actions">
+                  <a
+                      href="/Resume.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="resume-btn"
+                  >
+                    View Resume
+                  </a>
+                  <a href="#projects">Projects</a>
+                  <a href="#skills">Skills</a>
+                  <a href="#contact">Contact</a>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="preview-card">
-            <p className="label">Featured Project</p>
-            <div className="project-title-row">
-              <img
-                  src="/issue-flow-icon.png"
-                  alt="IssueFlow logo"
-                  className="project-logo"
-              />
-              <h2>IssueFlow</h2>
-            </div>
-            <p>
-              A full stack issue tracker with repositories, issues, users,
-              JWT authentication, PostgreSQL persistence, and protected API
-              endpoints.
-            </p>
-
-            <div className="tech-list">
-              <span>Java</span>
-              <span>Spring Boot</span>
-              <span>JWT</span>
-              <span>PostgreSQL</span>
-              <span>Resend API</span>
-              <span>React</span>
-            </div>
-
-            <div className="actions">
-              <a href="https://github.com/HunterLynch0/issueflow"
-                 target="_blank"
-                 rel="noopener noreferrer"
-              >
-                GitHub
-              </a>
-              <a href="https://issueflow.site"
-                 target="_blank"
-                 rel="noopener noreferrer"
-              >
-                Live Site
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <section className="section tech-stack-section">
-          <p className="label">Tech Stack</p>
-          <h2>Tools I work with</h2>
-
-          <div className="tech-marquee">
-            <div className="tech-track">
-              <span><FaJava /> Java</span>
-              <span><SiSpringboot /> Spring Boot</span>
-              <span><FaReact /> React</span>
-              <span><FaJs /> JavaScript</span>
-              <span><SiPostgresql /> PostgreSQL</span>
-              <span><FaGitAlt /> Git</span>
-              <span><FaHtml5 /> HTML</span>
-              <span><FaCss3Alt /> CSS</span>
-              <span><SiVite /> Vite</span>
-              <span><SiCplusplus /> C++</span>
-              <span><SiDocker /> Docker</span>
-
-              {/* duplicate so the loop is seamless */}
-              <span><FaJava /> Java</span>
-              <span><SiSpringboot /> Spring Boot</span>
-              <span><FaReact /> React</span>
-              <span><FaJs /> JavaScript</span>
-              <span><SiPostgresql /> PostgreSQL</span>
-              <span><FaGitAlt /> Git</span>
-              <span><FaHtml5 /> HTML</span>
-              <span><FaCss3Alt /> CSS</span>
-              <span><SiVite /> Vite</span>
-              <span><SiCplusplus /> C++</span>
-              <span><SiDocker /> Docker</span>
-            </div>
-          </div>
-        </section>
-
-        <section id="projects" className="section">
-          <p className="command">
-            <span className="prompt">$</span> ls projects
-          </p>
-
-          <div className="cards">
-            <div className="card">
-              <h3>IssueFlow | Personal</h3>
+            <div className="preview-card">
+              <p className="label">Featured Project</p>
+              <div className="project-title-row">
+                <img
+                    src="/issue-flow-icon.png"
+                    alt="IssueFlow logo"
+                    className="project-logo"
+                />
+                <h2>IssueFlow</h2>
+              </div>
               <p>
-                Full stack issue tracker with authentication, shared repositories,
-                issues, and repository permissions.
+                A full stack issue tracker with repositories, issues, users,
+                JWT authentication, PostgreSQL persistence, and protected API
+                endpoints.
               </p>
-              <div className="tech-list small">
+
+              <div className="tech-list">
                 <span>Java</span>
                 <span>Spring Boot</span>
+                <span>JWT</span>
                 <span>PostgreSQL</span>
                 <span>Resend API</span>
                 <span>React</span>
               </div>
-              <div className="actions small">
-                <a href="https://github.com/HunterLynch0/issueflow" target="_blank" rel="noopener noreferrer">GitHub</a>
-                <a href="https://issueflow.site" target="_blank" rel="noopener noreferrer">Live Site</a>
+
+              <div className="actions">
+                <a
+                    href="https://github.com/HunterLynch0/issueflow"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                  GitHub
+                </a>
+                <a
+                    href="https://issueflow.site"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                  Live Site
+                </a>
               </div>
             </div>
+          </section>
 
-            <div className="card">
-              <h3>VersionHandle | Personal</h3>
-              <p>
-                A lightweight version control system, inspired by Git, built from scratch
-                as a Java CLI tool. Supports repository initialization, staging,
-                commits, status, logs, branches, checkout, and merges with conflict markers.
-              </p>
-              <div className="tech-list small">
-                <span>Java 17</span>
-                <span>Maven</span>
-                <span>CLI</span>
-                <span>SHA-256</span>
-              </div>
-              <div className="actions small">
-                <a href="https://github.com/HunterLynch0/versionhandle" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <section className="section tech-stack-section">
+            <p className="label">Tech Stack</p>
+            <h2>Tools I work with</h2>
+
+            <div className="tech-marquee">
+              <div className="tech-track">
+                <span><FaJava /> Java</span>
+                <span><SiSpringboot /> Spring Boot</span>
+                <span><FaReact /> React</span>
+                <span><FaJs /> JavaScript</span>
+                <span><SiPostgresql /> PostgreSQL</span>
+                <span><FaGitAlt /> Git</span>
+                <span><FaHtml5 /> HTML</span>
+                <span><FaCss3Alt /> CSS</span>
+                <span><SiVite /> Vite</span>
+                <span><SiCplusplus /> C++</span>
+                <span><SiDocker /> Docker</span>
+
+                {/* duplicate so the loop is seamless */}
+                <span><FaJava /> Java</span>
+                <span><SiSpringboot /> Spring Boot</span>
+                <span><FaReact /> React</span>
+                <span><FaJs /> JavaScript</span>
+                <span><SiPostgresql /> PostgreSQL</span>
+                <span><FaGitAlt /> Git</span>
+                <span><FaHtml5 /> HTML</span>
+                <span><FaCss3Alt /> CSS</span>
+                <span><SiVite /> Vite</span>
+                <span><SiCplusplus /> C++</span>
+                <span><SiDocker /> Docker</span>
               </div>
             </div>
+          </section>
 
-            <div className="card">
-              <h3>ANDIE | Group Project</h3>
-              <p>
-                A non destructive Java Swing image editor built for COSC202.
-                Includes image filters, colour tools, transforms, drawing tools,
-                Internationalisation - I18N, and light/dark theme support.
-              </p>
-              <div className="tech-list small">
-                <span>Java</span>
-                <span>Swing</span>
-                <span>Gradle</span>
-                <span>FlatLaf</span>
+          <section id="projects" className="section">
+            <p className="command">
+              <span className="prompt">$</span> ls projects
+            </p>
+
+            <div className="cards">
+              <div className="card">
+                <h3>IssueFlow | Personal</h3>
+                <p>
+                  Full stack issue tracker with authentication, shared repositories,
+                  issues, and repository permissions.
+                </p>
+                <div className="tech-list small">
+                  <span>Java</span>
+                  <span>Spring Boot</span>
+                  <span>PostgreSQL</span>
+                  <span>Resend API</span>
+                  <span>React</span>
+                </div>
+                <div className="actions small">
+                  <a href="https://github.com/HunterLynch0/issueflow" target="_blank" rel="noopener noreferrer">GitHub</a>
+                  <a href="https://issueflow.site" target="_blank" rel="noopener noreferrer">Live Site</a>
+                </div>
+              </div>
+
+              <div className="card">
+                <h3>VersionHandle | Personal</h3>
+                <p>
+                  A lightweight version control system, inspired by Git, built from scratch
+                  as a Java CLI tool. Supports repository initialization, staging,
+                  commits, status, logs, branches, checkout, and merges with conflict markers.
+                </p>
+                <div className="tech-list small">
+                  <span>Java 17</span>
+                  <span>Maven</span>
+                  <span>CLI</span>
+                  <span>SHA-256</span>
+                </div>
+                <div className="actions small">
+                  <a href="https://github.com/HunterLynch0/versionhandle" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </div>
+              </div>
+
+              <div className="card">
+                <h3>ANDIE | Group Project</h3>
+                <p>
+                  A non destructive Java Swing image editor built for COSC202.
+                  Includes image filters, colour tools, transforms, drawing tools,
+                  Internationalisation - I18N, and light/dark theme support.
+                </p>
+                <div className="tech-list small">
+                  <span>Java</span>
+                  <span>Swing</span>
+                  <span>Gradle</span>
+                  <span>FlatLaf</span>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section id="skills" className="section">
-          <p className="command">
-            <span className="prompt">$</span> cat skills.txt
-          </p>
+          <section id="skills" className="section">
+            <p className="command">
+              <span className="prompt">$</span> cat skills.txt
+            </p>
 
-          <div className="skills">
-            <p>Java · JavaScript · SQL · C++</p>
-            <p>Spring Boot · Spring Security · JWT · REST APIs</p>
-            <p>React · Vite · HTML · CSS</p>
-            <p>PostgreSQL · Git · GitHub · GitLab · Maven</p>
-          </div>
-        </section>
+            <div className="skills">
+              <p>Java · JavaScript · SQL · C++</p>
+              <p>Spring Boot · Spring Security · JWT · REST APIs</p>
+              <p>React · Vite · HTML · CSS</p>
+              <p>PostgreSQL · Git · GitHub · GitLab · Maven</p>
+            </div>
+          </section>
 
-        <section id="contact" className="section">
-          <p className="command">
-            <span className="prompt">$</span> ./contact
-          </p>
+          <section id="contact" className="section">
+            <p className="command">
+              <span className="prompt">$</span> ./contact
+            </p>
 
-          <p className="text">Open to collaboration and job opportunities.</p>
+            <p className="text">Open to collaboration and job opportunities.</p>
 
-          <div className="actions">
-            <a href="mailto:hunterplynch07@gmail.com">Email</a>
-            <a href="https://github.com/HunterLynch0" target="_blank" rel="noopener noreferrer">
-              GitHub
-            </a>
-            <a href="https://www.linkedin.com/in/hunter-lynch-a6545938b/" target="_blank" rel="noopener noreferrer">
-              LinkedIn
-            </a>
-          </div>
-        </section>
+            <div className="actions">
+              <a href="mailto:hunterplynch07@gmail.com">Email</a>
+              <a href="https://github.com/HunterLynch0" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+              <a href="https://www.linkedin.com/in/hunter-lynch-a6545938b/" target="_blank" rel="noopener noreferrer">
+                LinkedIn
+              </a>
+            </div>
+          </section>
 
-        <DinoGame />
+          <DinoGame />
 
-        <footer className="footer">
-          <p>© 2026 Hunter Lynch.</p>
-        </footer>
-      </main>
+          <footer className="footer">
+            <p>© 2026 Hunter Lynch.</p>
+          </footer>
+        </main>
       </>
   );
 }

@@ -870,12 +870,15 @@ h2 {
 }
 
 /* Pause scroll while hovering */
+/*
 .tech-marquee:hover .tech-track {
   animation-play-state: paused;
 }
+*/
 
 /* Main hovered icon */
-.tech-track span:hover {
+.tech-track span:hover,
+.tech-track span.tech-hovered {
   transform: scale(1.26);
   margin-inline: 18px;
   opacity: 1;
@@ -888,7 +891,9 @@ h2 {
 }
 
 /* Immediately next icon */
-.tech-track span:hover + span {
+.tech-track span:hover + span,
+.tech-track span.tech-hovered + span,
+.tech-track span.tech-near {
   transform: scale(1.12);
   margin-inline: 8px;
   opacity: 0.95;
@@ -896,7 +901,9 @@ h2 {
 }
 
 /* Two after */
-.tech-track span:hover + span + span {
+.tech-track span:hover + span + span,
+.tech-track span.tech-hovered + span + span,
+.tech-track span.tech-far {
   transform: scale(1.05);
   margin-inline: 3px;
   opacity: 0.85;
