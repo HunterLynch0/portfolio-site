@@ -100,7 +100,7 @@ function App() {
             </div>
 
             <div className="terminal-body">
-              <p className="label">Portfolio</p>
+              <p className="label">About</p>
 
               <h1>Hunter Lynch</h1>
               <h2>Software Engineering Student</h2>
