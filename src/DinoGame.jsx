@@ -159,7 +159,7 @@ function DinoGame() {
                     </div>
 
                     {!gameStarted && !gameOver && (
-                        <div className="game-message">PRESS SPACE TO START</div>
+                        <div className="game-message">PRESS TO START</div>
                     )}
 
                     {gameOver && <div className="game-message">GAME OVER</div>}
