@@ -946,3 +946,29 @@ h2 {
     transform: translateX(-50%);
   }
 }
+
+.footer {
+  margin-top: 42px;
+  padding: 24px 0 6px;
+  text-align: center;
+  color: #737373;
+  font-size: 1.2rem;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.footer::before {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 1px;
+  margin: 0 auto 18px;
+  background: linear-gradient(
+          to right,
+          transparent,
+          rgba(34, 197, 94, 0.45),
+          transparent
+  );
+}

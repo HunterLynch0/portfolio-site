@@ -298,6 +298,10 @@ function App() {
         </section>
 
         <DinoGame />
+
+        <footer className="footer">
+          <p>© 2026 Hunter Lynch.</p>
+        </footer>
       </main>
       </>
   );
