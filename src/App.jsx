@@ -106,7 +106,7 @@ function App() {
               <h2>Software Engineering Student</h2>
 
               <p className="text">
-                Hi, I'm Hunter a Computer Science and Mathematics student at the University of Otago, with a focus on
+                Hi, I'm Hunter, a Computer Science and Mathematics student at the University of Otago, with a focus on
                 backend development, Java, Spring Boot, databases, and practical full stack systems. I grew up primarily
                 in Gisborne, New Zealand, and outside of my career I am a keen surfer who enjoys meeting new people and
                 staying active. I'm currently seeking software engineering internships for the 2026/27 summer.
