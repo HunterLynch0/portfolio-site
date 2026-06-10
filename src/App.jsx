@@ -106,8 +106,10 @@ function App() {
               <h2>Software Engineering Student</h2>
 
               <p className="text">
-                I study Computer Science and Mathematics at the University of Otago, with a focus on backend development, Java, Spring Boot, databases,
-                and practical full-stack systems. Currently seeking software engineering internships for the 2026/27 summer.
+                Hi, I'm Hunter a Computer Science and Mathematics student at the University of Otago, with a focus on
+                backend development, Java, Spring Boot, databases, and practical full-stack systems. I grew up primarily
+                in Gisborne, New Zealand, and outside of my career I am a keen surfer who enjoys meeting new people and
+                staying active. I'm currently seeking software engineering internships for the 2026/27 summer.
               </p>
 
               <p className="label">Focus</p>
@@ -135,7 +137,14 @@ function App() {
 
           <div className="preview-card">
             <p className="label">Featured Project</p>
-            <h2>IssueFlow</h2>
+            <div className="project-title-row">
+              <img
+                  src="/issue-flow-icon.png"
+                  alt="IssueFlow logo"
+                  className="project-logo"
+              />
+              <h2>IssueFlow</h2>
+            </div>
             <p>
               A full stack issue tracker with repositories, issues, users,
               JWT authentication, PostgreSQL persistence, and protected API

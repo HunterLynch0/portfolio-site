@@ -954,3 +954,25 @@ h2 {
           transparent
   );
 }
+
+.project-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.project-logo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  border-radius: 12px;
+  padding: 0.35rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.project-title-row h2 {
+  margin: 0;
+}
