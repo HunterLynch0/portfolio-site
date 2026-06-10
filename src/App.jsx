@@ -96,25 +96,21 @@ function App() {
                 <span></span>
                 <span></span>
               </div>
-              <p>hunter@portfolio:~</p>
+              <p>Hunter Lynch · Portfolio</p>
             </div>
 
             <div className="terminal-body">
-              <p>
-                <span className="prompt">$</span> whoami
-              </p>
+              <p className="label">Portfolio</p>
 
               <h1>Hunter Lynch</h1>
-              <h2>Software engineering Student</h2>
+              <h2>Software Engineering Student</h2>
 
               <p className="text">
-                I am currently studying Computer Science and Mathematics at the University of Otago, focused on backend development, Java, Spring Boot, databases,
-                and practical full-stack systems. Currently looking for job opportunities/internships over 26/27 summer.
+                I study Computer Science and Mathematics at the University of Otago, with a focus on backend development, Java, Spring Boot, databases,
+                and practical full-stack systems. Currently seeking software engineering internships for the 2026/27 summer.
               </p>
 
-              <p>
-                <span className="prompt">$</span> cat focus.txt
-              </p>
+              <p className="label">Focus</p>
 
               <p className="text">
                 Backend systems, data structures and algorithms, database design, and clean API
@@ -130,9 +126,9 @@ function App() {
                 >
                   View Resume
                 </a>
-                <a href="#projects">./projects</a>
-                <a href="#skills">./skills</a>
-                <a href="#contact">./contact</a>
+                <a href="#projects">Projects</a>
+                <a href="#skills">Skills</a>
+                <a href="#contact">Contact</a>
               </div>
             </div>
           </div>
