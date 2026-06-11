@@ -6,7 +6,40 @@ const CACTUS_VIEW_BOXES = {
     double: "0 0 26 30",
     triple: "0 0 38 30",
 };
+const CACTUS_BASE_DURATION = 1.45;
+const CACTUS_MAX_SPEED = 1.45;
+const CACTUS_MAX_START_OFFSET = -84;
+const CACTUS_MIN_START_OFFSET = -52;
 const HIGH_SCORE_STORAGE_KEY = "portfolio-dino-high-score";
+
+function getRandomNumber(min, max) {
+    return min + Math.random() * (max - min);
+}
+
+function getRandomCactusType() {
+    return CACTUS_VARIANTS[Math.floor(Math.random() * CACTUS_VARIANTS.length)];
+}
+
+function getRandomCactusGap() {
+    return `${Math.round(
+        getRandomNumber(CACTUS_MAX_START_OFFSET, CACTUS_MIN_START_OFFSET)
+    )}px`;
+}
+
+function getGameSpeed(score) {
+    return Math.min(1 + score * 0.001, CACTUS_MAX_SPEED);
+}
+
+function createCactusObstacle(score = 0) {
+    const duration = CACTUS_BASE_DURATION / getGameSpeed(score);
+
+    return {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        variant: getRandomCactusType(),
+        startOffset: getRandomCactusGap(),
+        duration: `${duration.toFixed(2)}s`,
+    };
+}
 
 function getSavedHighScore() {
     if (typeof window === "undefined") return 0;
@@ -26,11 +59,11 @@ function DinoGame() {
         score: 0,
         highScore: getSavedHighScore(),
     }));
-    const [cactusVariantIndex, setCactusVariantIndex] = useState(0);
+    const [cactusObstacle, setCactusObstacle] = useState(() => createCactusObstacle(0));
 
     const dinoRef = useRef(null);
     const cactusRef = useRef(null);
-    const cactusVariant = CACTUS_VARIANTS[cactusVariantIndex];
+    const cactusVariant = cactusObstacle.variant;
     const cactusViewBox = CACTUS_VIEW_BOXES[cactusVariant];
     const { score, highScore } = scores;
 
@@ -42,7 +75,7 @@ function DinoGame() {
             score: 0,
         }));
         setIsJumping(false);
-        setCactusVariantIndex(0);
+        setCactusObstacle(createCactusObstacle(0));
     }, []);
 
     const jump = useCallback(() => {
@@ -68,11 +101,11 @@ function DinoGame() {
         }
     }, [gameOver, gameStarted, isJumping, resetGame]);
 
-    const changeCactusVariant = useCallback(() => {
-        setCactusVariantIndex((currentVariant) => (
-            (currentVariant + 1) % CACTUS_VARIANTS.length
-        ));
-    }, []);
+    const spawnNextCactus = useCallback((event) => {
+        if (event.target !== event.currentTarget || !gameStarted || gameOver) return;
+
+        setCactusObstacle(createCactusObstacle(score));
+    }, [gameOver, gameStarted, score]);
 
     useEffect(() => {
         function handleKeyDown(event) {
@@ -242,15 +275,20 @@ function DinoGame() {
                     </svg>
 
                     <svg
+                        key={cactusObstacle.id}
                         ref={cactusRef}
                         className={`chrome-cactus cactus-${cactusVariant} ${
                             gameStarted ? "move" : ""
                         }`}
+                        style={{
+                            "--cactus-duration": cactusObstacle.duration,
+                            "--cactus-start": cactusObstacle.startOffset,
+                        }}
                         viewBox={cactusViewBox}
                         aria-hidden="true"
                         focusable="false"
                         preserveAspectRatio="xMidYMax meet"
-                        onAnimationIteration={changeCactusVariant}
+                        onAnimationEnd={spawnNextCactus}
                     >
                         {cactusVariant === "single" && (
                             <g className="cactus-fill">
