@@ -85,7 +85,7 @@ const projects = [
       "Branches point to different commit histories.",
       "Merge conflicts are represented with conflict markers.",
     ],
-    diagram: ["CLI Parser", "Hidden Repo", "SHA-256 Objects", "Commits", "Branches"],
+    diagram: ["CLI Parser", "Hidden Repo", "SHA-256 Hashing", "Commits", "Branches"],
   },
   {
     id: "andie",
@@ -125,7 +125,7 @@ const skillGroups = [
   },
   {
     title: "Tools & Data",
-    items: ["PostgreSQL", "postman", "Git", "GitLab", "Maven", "Gradle"],
+    items: ["PostgreSQL", "Postman", "Git", "GitLab", "Maven", "Gradle"],
   },
 ];
 
