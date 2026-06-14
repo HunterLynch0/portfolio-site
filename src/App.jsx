@@ -501,7 +501,7 @@ function App() {
 
               <div className="featured-preview-media" aria-label="IssueFlow preview">
                 <img
-                    src="/issueflow-preview-1.1.png"
+                    src="/issueflow-preview-4.png"
                     alt="IssueFlow preview"
                     onError={(event) => {
                       event.currentTarget.hidden = true;
