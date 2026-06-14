@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import DinoGame from "./DinoGame";
+import IntroScreen from "./IntroScreen";
 import {
   FaJava,
   FaReact,
@@ -211,6 +212,7 @@ function getHeatmapMonthLabels(heatmap) {
 }
 
 function App() {
+  const [isIntroActive, setIsIntroActive] = useState(true);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
   const [cursorActive, setCursorActive] = useState(false);
@@ -401,8 +403,14 @@ function App() {
     });
   };
 
+  const handleIntroComplete = useCallback(() => {
+    setIsIntroActive(false);
+  }, []);
+
   return (
       <>
+        <IntroScreen onComplete={handleIntroComplete} />
+
         <div
             className={`${cursorClassName} cursor-ring`}
             style={{
@@ -419,7 +427,7 @@ function App() {
             }}
         ></div>
 
-        <main className="page">
+        <main className="page" inert={isIntroActive ? "" : undefined}>
           <section className="hero-grid">
             <div className="terminal">
               <div className="terminal-header">
