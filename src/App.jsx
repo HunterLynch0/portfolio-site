@@ -427,7 +427,11 @@ function App() {
             }}
         ></div>
 
-        <main className="page" inert={isIntroActive ? "" : undefined}>
+        <main
+            className={`page ${isIntroActive ? "page-intro-hidden" : ""}`}
+            inert={isIntroActive ? "" : undefined}
+            aria-hidden={isIntroActive ? "true" : undefined}
+        >
           <section className="hero-grid">
             <div className="terminal">
               <div className="terminal-header">

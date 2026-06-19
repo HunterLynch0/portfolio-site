@@ -189,9 +189,14 @@ body::after {
           radial-gradient(circle at 50% 45%, rgba(var(--accent-blue-rgb), 0.14), transparent 30%),
           radial-gradient(circle at 50% 56%, rgba(var(--accent-green-rgb), 0.13), transparent 34%),
           linear-gradient(135deg, #020617 0%, #07111f 50%, #03100d 100%);
+  background-color: #020617;
   pointer-events: auto;
   isolation: isolate;
+  contain: paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
   animation: introScreenSettle 3.3s ease both;
+  will-change: background-position, opacity;
 }
 
 .intro-screen::before,
@@ -206,7 +211,7 @@ body::after {
 
 .intro-screen::before {
   inset: -22vmax;
-  z-index: -3;
+  z-index: 0;
   background:
           radial-gradient(
                   460px circle at 30% 42%,
@@ -240,7 +245,6 @@ body::after {
           linear-gradient(rgba(255, 255, 255, 0.026) 50%, transparent 50%),
           radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.34) 68%, rgba(0, 0, 0, 0.78) 100%);
   background-size: 100% 4px, auto;
-  mix-blend-mode: screen;
   opacity: 0.52;
 }
 
@@ -250,7 +254,7 @@ body::after {
 
 .intro-grid {
   inset: 0;
-  z-index: -2;
+  z-index: 1;
   background-image:
           linear-gradient(rgba(var(--accent-green-rgb), 0.08) 1px, transparent 1px),
           linear-gradient(90deg, rgba(var(--accent-blue-rgb), 0.07) 1px, transparent 1px);
@@ -264,7 +268,7 @@ body::after {
 
 .intro-title-shell {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: grid;
   place-items: center;
   width: min(760px, 88vw);
@@ -636,6 +640,13 @@ a {
   width: min(1150px, 92%);
   margin: 0 auto;
   padding: 40px 0;
+  opacity: 1;
+  transition: opacity 0.28s ease;
+}
+
+.page-intro-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .hero-grid {
