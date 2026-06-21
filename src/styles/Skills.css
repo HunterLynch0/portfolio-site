@@ -1,0 +1,316 @@
+.skills-section {
+  overflow: hidden;
+}
+
+.skills-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.1fr);
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.skill-constellation {
+  min-height: 610px;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  transform:
+    perspective(1100px)
+    rotateY(calc(var(--section-signed) * 4deg))
+    translateY(calc(var(--section-progress) * -18px));
+}
+
+.constellation-core {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 9.5rem;
+  height: 9.5rem;
+  border: 1px solid rgba(var(--green-rgb), 0.38);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(var(--green-rgb), 0.18), rgba(var(--cyan-rgb), 0.08), rgba(2, 5, 12, 0.88));
+  box-shadow:
+    0 0 60px rgba(var(--green-rgb), 0.16),
+    inset 0 0 38px rgba(var(--cyan-rgb), 0.08);
+  text-align: center;
+}
+
+.constellation-core span {
+  color: var(--subtle);
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+}
+
+.constellation-core strong {
+  color: var(--text);
+  font-size: 1.55rem;
+}
+
+.orbit-ring {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  border: 1px solid rgba(var(--cyan-rgb), 0.13);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotateX(64deg);
+  pointer-events: none;
+}
+
+.orbit-ring-one {
+  width: 25rem;
+  height: 25rem;
+  box-shadow: 0 0 60px rgba(var(--cyan-rgb), 0.08);
+  animation: orbitRingOne 16s linear infinite;
+}
+
+.orbit-ring-two {
+  width: 34rem;
+  height: 34rem;
+  border-color: rgba(var(--violet-rgb), 0.12);
+  animation: orbitRingTwo 22s linear infinite reverse;
+}
+
+.orbit-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 38px;
+  border: 1px solid rgba(180, 196, 220, 0.18);
+  border-radius: 999px;
+  padding: 0 0.72rem;
+  background: rgba(6, 12, 23, 0.82);
+  color: #e8fbff;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.26),
+    0 0 22px rgba(var(--cyan-rgb), 0.08);
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--node-angle))
+    translateX(15rem)
+    rotate(calc(var(--node-angle) * -1));
+  animation: nodePulse 3.8s ease-in-out infinite;
+}
+
+.orbit-node:nth-of-type(even) {
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--node-angle))
+    translateX(10.8rem)
+    rotate(calc(var(--node-angle) * -1));
+}
+
+.orbit-node svg {
+  color: var(--green);
+}
+
+.orbit-node span {
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+.skill-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.skill-category {
+  min-height: 185px;
+  padding: 1.15rem;
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.skill-category:hover {
+  border-color: rgba(var(--green-rgb), 0.34);
+  box-shadow:
+    var(--shadow),
+    0 0 42px rgba(var(--green-rgb), 0.1);
+  transform: translateY(-4px) rotateX(2deg);
+}
+
+.skill-category-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.skill-category h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.skill-category-header span {
+  color: var(--cyan);
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.74rem;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-tags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(180, 196, 220, 0.16);
+  border-radius: 999px;
+  padding: 0 0.62rem;
+  background: rgba(8, 14, 24, 0.7);
+  color: #cbd7e8;
+  font-size: 0.82rem;
+}
+
+.skill-ribbon {
+  position: relative;
+  overflow: hidden;
+  margin-top: 1.1rem;
+  border: 1px solid rgba(180, 196, 220, 0.12);
+  border-radius: var(--radius);
+  background: rgba(4, 8, 16, 0.58);
+}
+
+.skill-ribbon::before,
+.skill-ribbon::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 8rem;
+  pointer-events: none;
+}
+
+.skill-ribbon::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(2, 3, 7, 0.95), transparent);
+}
+
+.skill-ribbon::after {
+  right: 0;
+  background: linear-gradient(270deg, rgba(2, 3, 7, 0.95), transparent);
+}
+
+.skill-ribbon div {
+  display: flex;
+  width: max-content;
+  gap: 0.62rem;
+  padding: 0.75rem;
+  animation: skillRibbon 28s linear infinite;
+}
+
+.skill-ribbon span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid rgba(var(--cyan-rgb), 0.18);
+  border-radius: 999px;
+  padding: 0 0.78rem;
+  background: rgba(var(--cyan-rgb), 0.045);
+  color: rgba(232, 251, 255, 0.84);
+  white-space: nowrap;
+}
+
+@keyframes orbitRingOne {
+  to {
+    transform: translate(-50%, -50%) rotateX(64deg) rotateZ(360deg);
+  }
+}
+
+@keyframes orbitRingTwo {
+  to {
+    transform: translate(-50%, -50%) rotateX(64deg) rotateZ(360deg);
+  }
+}
+
+@keyframes nodePulse {
+  50% {
+    border-color: rgba(var(--cyan-rgb), 0.38);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.26),
+      0 0 26px rgba(var(--cyan-rgb), 0.16);
+  }
+}
+
+@keyframes skillRibbon {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 1040px) {
+  .skills-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-constellation {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 720px) {
+  .skill-constellation {
+    min-height: 390px;
+  }
+
+  .orbit-ring-one {
+    width: 18rem;
+    height: 18rem;
+  }
+
+  .orbit-ring-two {
+    width: 24rem;
+    height: 24rem;
+  }
+
+  .orbit-node {
+    transform:
+      translate(-50%, -50%)
+      rotate(var(--node-angle))
+      translateX(10.5rem)
+      rotate(calc(var(--node-angle) * -1));
+  }
+
+  .orbit-node:nth-of-type(even) {
+    transform:
+      translate(-50%, -50%)
+      rotate(var(--node-angle))
+      translateX(7.7rem)
+      rotate(calc(var(--node-angle) * -1));
+  }
+
+  .orbit-node span {
+    display: none;
+  }
+
+  .skill-category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-ribbon::before,
+  .skill-ribbon::after {
+    width: 4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-ring-one,
+  .orbit-ring-two,
+  .orbit-node,
+  .skill-ribbon div {
+    animation: none;
+  }
+}

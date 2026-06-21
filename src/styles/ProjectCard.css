@@ -1,0 +1,429 @@
+.project-orbit-card {
+  --accent-rgb: var(--cyan-rgb);
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --shine-x: 50%;
+  --shine-y: 20%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(640px, 94%);
+  min-height: 520px;
+  border: 1px solid rgba(var(--accent-rgb), 0.24);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), transparent 34%),
+    radial-gradient(circle at var(--shine-x) var(--shine-y), rgba(255, 255, 255, 0.13), transparent 14rem),
+    linear-gradient(315deg, rgba(var(--accent-rgb), 0.13), transparent 42%),
+    rgba(6, 11, 22, 0.86);
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.5),
+    0 0 44px rgba(var(--accent-rgb), 0.1);
+  opacity: var(--card-opacity);
+  filter: blur(var(--card-blur));
+  overflow: hidden;
+  pointer-events: none;
+  transform:
+    translate3d(calc(-50% + var(--card-x)), calc(-50% + var(--card-y)), var(--card-z))
+    rotateX(calc(var(--card-rotate-x) + var(--tilt-x)))
+    rotateY(calc(var(--card-rotate-y) + var(--tilt-y)))
+    rotateZ(var(--card-rotate-z))
+    scale(var(--card-scale));
+  transform-style: preserve-3d;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.18s ease;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+.project-orbit-card.accent-green {
+  --accent-rgb: var(--green-rgb);
+}
+
+.project-orbit-card.accent-amber {
+  --accent-rgb: var(--amber-rgb);
+}
+
+.project-orbit-card.accent-violet {
+  --accent-rgb: var(--violet-rgb);
+}
+
+.project-orbit-card::before,
+.project-orbit-card::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.project-orbit-card::before {
+  inset: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.026) 50%, transparent 50%) 0 0 / 100% 4px,
+    radial-gradient(circle at 82% 18%, rgba(var(--accent-rgb), 0.2), transparent 18rem);
+  opacity: 0.82;
+}
+
+.project-orbit-card::after {
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(125deg, transparent, rgba(var(--accent-rgb), 0.72), rgba(255, 255, 255, 0.32), transparent);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.project-orbit-card.is-active {
+  border-color: rgba(var(--accent-rgb), 0.66);
+  box-shadow:
+    0 34px 110px rgba(0, 0, 0, 0.58),
+    0 0 74px rgba(var(--accent-rgb), 0.2);
+  pointer-events: auto;
+}
+
+.project-orbit-card.is-active::after,
+.project-orbit-card:hover::after {
+  opacity: 1;
+}
+
+.project-card-scanline {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(var(--accent-rgb), 0.09), transparent);
+  opacity: 0.46;
+  transform: translateY(-100%);
+  animation: cardScan 4.4s ease-in-out infinite;
+}
+
+.project-card-terminal {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.72rem;
+  min-height: 46px;
+  padding: 0 1rem;
+  border-bottom: 1px solid rgba(180, 196, 220, 0.14);
+  background: rgba(2, 5, 12, 0.76);
+}
+
+.project-card-terminal::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.82), transparent);
+  transform: translateX(-58%);
+  animation: terminalLineSweep 3.4s ease-in-out infinite;
+}
+
+.terminal-lights {
+  gap: 0.44rem;
+}
+
+.project-card-terminal p {
+  margin: 0;
+  overflow: hidden;
+  color: rgba(226, 238, 255, 0.72);
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-card-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  min-height: 474px;
+  padding: 1.25rem;
+}
+
+.project-card-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(170px, 0.7fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.project-index,
+.project-type {
+  margin: 0;
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 700;
+}
+
+.project-index {
+  color: rgba(var(--accent-rgb), 0.82);
+  font-size: 0.74rem;
+}
+
+.project-type {
+  margin-top: 0.48rem;
+  color: rgba(var(--accent-rgb), 0.94);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.project-orbit-card h3 {
+  margin: 0.72rem 0 0;
+  color: var(--text);
+  font-size: 2.35rem;
+  font-weight: 820;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.project-description {
+  margin: 1rem 0 0;
+  color: #cbd7e8;
+  line-height: 1.62;
+}
+
+.project-visual {
+  position: relative;
+  min-height: 180px;
+  overflow: hidden;
+  border: 1px solid rgba(180, 196, 220, 0.12);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(145deg, rgba(var(--accent-rgb), 0.12), transparent),
+    rgba(2, 5, 12, 0.62);
+}
+
+.project-visual img {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  object-fit: cover;
+  opacity: 0.78;
+  filter: saturate(0.92) contrast(1.08);
+}
+
+.project-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.032) 50%, transparent 50%) 0 0 / 100% 4px,
+    radial-gradient(circle at 50% 50%, transparent, rgba(0, 0, 0, 0.46));
+}
+
+.project-visual-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.project-visual-fallback span {
+  position: absolute;
+  border: 1px solid rgba(var(--accent-rgb), 0.26);
+  border-radius: 50%;
+}
+
+.project-visual-fallback span:nth-child(1) {
+  width: 8rem;
+  height: 8rem;
+}
+
+.project-visual-fallback span:nth-child(2) {
+  width: 5rem;
+  height: 5rem;
+  transform: rotateX(64deg);
+}
+
+.project-visual-fallback span:nth-child(3) {
+  width: 2rem;
+  height: 2rem;
+  background: rgba(var(--accent-rgb), 0.18);
+  filter: blur(10px);
+}
+
+.project-focus-list,
+.project-tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.48rem;
+}
+
+.project-focus-list {
+  margin-top: 1.15rem;
+}
+
+.project-tech-tags {
+  margin-top: 0.9rem;
+}
+
+.project-focus-list span,
+.project-tech-tags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(180, 196, 220, 0.16);
+  border-radius: 999px;
+  padding: 0 0.64rem;
+  background: rgba(8, 14, 24, 0.68);
+}
+
+.project-focus-list span {
+  color: #e8fbff;
+  font-size: 0.8rem;
+}
+
+.project-tech-tags span {
+  color: #b9c7db;
+  font-size: 0.78rem;
+}
+
+.project-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+}
+
+.project-card-footer > span {
+  color: var(--subtle);
+  font-size: 0.84rem;
+}
+
+.project-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.project-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  gap: 0.45rem;
+  border: 1px solid rgba(var(--accent-rgb), 0.32);
+  border-radius: var(--radius);
+  padding: 0 0.75rem;
+  background: rgba(var(--accent-rgb), 0.08);
+  color: #f8fafc;
+  font-size: 0.84rem;
+  font-weight: 760;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.project-links a:hover,
+.project-links a:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.76);
+  background: rgba(var(--accent-rgb), 0.16);
+  box-shadow: 0 8px 28px rgba(var(--accent-rgb), 0.15);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+@keyframes cardScan {
+  0%,
+  55% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes terminalLineSweep {
+  0%,
+  30% {
+    opacity: 0;
+    transform: translateX(-62%);
+  }
+
+  58% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(62%);
+  }
+}
+
+@media (max-width: 720px) {
+  .project-orbit-card {
+    width: 100%;
+    min-height: 410px;
+  }
+
+  .project-card-content {
+    min-height: 364px;
+    padding: 1rem;
+  }
+
+  .project-card-main {
+    grid-template-columns: 1fr;
+  }
+
+  .project-visual {
+    display: none;
+  }
+
+  .project-orbit-card h3 {
+    font-size: 1.66rem;
+  }
+
+  .project-description {
+    font-size: 0.94rem;
+    line-height: 1.54;
+  }
+
+  .project-card-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .project-links {
+    justify-content: flex-start;
+  }
+
+  .project-focus-list span,
+  .project-tech-tags span {
+    min-height: 28px;
+    padding: 0 0.52rem;
+    font-size: 0.73rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-orbit-card {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    opacity: 1;
+    filter: none;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .project-card-scanline,
+  .project-card-terminal::after {
+    animation: none;
+  }
+}

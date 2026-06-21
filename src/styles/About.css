@@ -1,0 +1,332 @@
+.about-section {
+  padding-top: 7rem;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.identity-panel {
+  min-height: 100%;
+  padding: 1.5rem;
+  transform:
+    perspective(1000px)
+    rotateY(calc(var(--section-signed) * -4deg))
+    translateY(calc(var(--section-progress) * -18px));
+}
+
+.panel-cap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  color: var(--muted);
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+}
+
+.panel-cap strong {
+  color: var(--green);
+  font-size: 0.72rem;
+}
+
+.identity-panel h3 {
+  margin: 0;
+  max-width: 640px;
+  color: var(--text);
+  font-size: 2rem;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.identity-panel p {
+  margin: 1.1rem 0 0;
+  color: #cbd7e8;
+  line-height: 1.72;
+}
+
+.identity-lines {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1.5rem;
+}
+
+.identity-lines span {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(180, 196, 220, 0.12);
+}
+
+.identity-lines span::before {
+  content: "";
+  display: block;
+  width: 36%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--green));
+  animation: identityLine 3.2s ease-in-out infinite;
+}
+
+.identity-lines span:nth-child(2)::before {
+  animation-delay: 0.35s;
+}
+
+.identity-lines span:nth-child(3)::before {
+  animation-delay: 0.7s;
+}
+
+.profile-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.profile-stat {
+  min-height: 180px;
+  padding: 1.15rem;
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.profile-stat:hover {
+  border-color: rgba(var(--cyan-rgb), 0.34);
+  box-shadow:
+    var(--shadow),
+    0 0 42px rgba(var(--cyan-rgb), 0.12);
+  transform: translateY(-4px) rotateX(2deg);
+}
+
+.profile-stat span {
+  display: block;
+  color: var(--cyan);
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+}
+
+.profile-stat strong {
+  display: block;
+  margin-top: 0.8rem;
+  color: var(--text);
+  font-size: 1.45rem;
+  line-height: 1.05;
+}
+
+.profile-stat p {
+  margin: 0.8rem 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.github-activity-panel {
+  grid-column: 1 / -1;
+  padding: 1.25rem;
+}
+
+.github-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.github-panel-header h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.45rem;
+}
+
+.github-panel-header a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+  min-height: 38px;
+  border: 1px solid rgba(var(--cyan-rgb), 0.28);
+  border-radius: var(--radius);
+  padding: 0 0.75rem;
+  background: rgba(var(--cyan-rgb), 0.06);
+  color: #e8fbff;
+  font-weight: 700;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.github-panel-header a:hover,
+.github-panel-header a:focus-visible {
+  border-color: rgba(var(--cyan-rgb), 0.68);
+  background: rgba(var(--cyan-rgb), 0.12);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.github-heatmap-link {
+  display: block;
+}
+
+.heatmap-chart {
+  --heatmap-gap: 4px;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0.5rem 0.65rem;
+  overflow-x: auto;
+  padding: 1rem;
+  border: 1px solid rgba(180, 196, 220, 0.12);
+  border-radius: var(--radius);
+  background: rgba(2, 5, 12, 0.5);
+}
+
+.heatmap-axis-spacer {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.heatmap-month-axis {
+  display: grid;
+  grid-template-columns: repeat(52, minmax(10px, 1fr));
+  min-width: 720px;
+  color: var(--subtle);
+  font-size: 0.72rem;
+}
+
+.heatmap-day-axis {
+  display: grid;
+  grid-row: 2;
+  grid-template-rows: repeat(7, 10px);
+  gap: var(--heatmap-gap);
+  color: var(--subtle);
+  font-size: 0.68rem;
+}
+
+.heatmap-day-axis span:nth-child(1) {
+  grid-row: 2;
+}
+
+.heatmap-day-axis span:nth-child(2) {
+  grid-row: 4;
+}
+
+.heatmap-day-axis span:nth-child(3) {
+  grid-row: 6;
+}
+
+.github-heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(52, minmax(10px, 1fr));
+  gap: var(--heatmap-gap);
+  min-width: 720px;
+}
+
+.heatmap-week {
+  display: grid;
+  grid-template-rows: repeat(7, 10px);
+  gap: var(--heatmap-gap);
+}
+
+.heatmap-cell {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(180, 196, 220, 0.08);
+  border-radius: 2px;
+  background: rgba(30, 41, 59, 0.84);
+}
+
+.github-heatmap-grid .heatmap-cell {
+  width: 100%;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.github-heatmap-grid .heatmap-cell:hover {
+  z-index: 2;
+  border-color: rgba(255, 255, 255, 0.42);
+  transform: scale(1.35);
+}
+
+.heatmap-cell.level-1 {
+  background: rgba(var(--green-rgb), 0.26);
+}
+
+.heatmap-cell.level-2 {
+  background: rgba(var(--green-rgb), 0.44);
+}
+
+.heatmap-cell.level-3 {
+  background: rgba(var(--green-rgb), 0.68);
+}
+
+.heatmap-cell.level-4 {
+  background: rgba(var(--cyan-rgb), 0.9);
+}
+
+.heatmap-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+@keyframes identityLine {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  60%,
+  100% {
+    transform: translateX(310%);
+  }
+}
+
+@media (max-width: 940px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .identity-panel,
+  .github-activity-panel {
+    padding: 1rem;
+  }
+
+  .identity-panel h3 {
+    font-size: 1.5rem;
+  }
+
+  .profile-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .github-panel-header,
+  .heatmap-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .identity-lines span::before {
+    animation: none;
+  }
+}

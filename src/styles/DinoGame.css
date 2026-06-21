@@ -1,0 +1,395 @@
+.dino-section {
+  padding-top: 7rem;
+  padding-bottom: 4rem;
+}
+
+.dino-section .section-heading {
+  margin-bottom: 1.2rem;
+}
+
+.dino-section .section-heading h2 {
+  max-width: 760px;
+}
+
+.dino-game {
+  --runner-bg: #050a12;
+  --runner-fg: #dffcff;
+  --runner-muted: rgba(148, 163, 184, 0.5);
+  --runner-accent: var(--cyan);
+  --runner-obstacle: var(--green);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--cyan-rgb), 0.28);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--violet-rgb), 0.08), transparent 26rem),
+    linear-gradient(145deg, rgba(var(--cyan-rgb), 0.1), transparent 36%),
+    rgba(3, 7, 18, 0.82);
+  box-shadow:
+    var(--shadow),
+    0 0 42px rgba(var(--cyan-rgb), 0.12);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dino-game:focus-visible {
+  border-color: rgba(var(--green-rgb), 0.72);
+  box-shadow:
+    var(--shadow),
+    0 0 54px rgba(var(--green-rgb), 0.18);
+  outline: none;
+}
+
+.dino-game::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 80% 20%, rgba(var(--cyan-rgb), 0.16), transparent 26rem);
+}
+
+.dino-game.running {
+  border-color: rgba(var(--green-rgb), 0.45);
+  box-shadow:
+    var(--shadow),
+    0 0 48px rgba(var(--green-rgb), 0.16);
+}
+
+.dino-game.ended {
+  --runner-accent: var(--danger);
+  --runner-obstacle: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.42);
+}
+
+.game-screen {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 50%, transparent 50%) 0 0 / 100% 4px,
+    linear-gradient(180deg, rgba(4, 9, 18, 0.72), var(--runner-bg));
+}
+
+.game-screen::before,
+.game-screen::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.game-screen::before {
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(var(--cyan-rgb), 0.055) 1px, transparent 1px),
+    linear-gradient(rgba(var(--green-rgb), 0.045) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.48;
+}
+
+.game-screen::after {
+  inset: 0;
+  background: radial-gradient(circle at 50% 60%, transparent 0%, rgba(0, 0, 0, 0.36) 76%, rgba(0, 0, 0, 0.66) 100%);
+}
+
+.dino-game.running .game-screen::before {
+  animation: runnerGridDrift 6s linear infinite;
+}
+
+.score-board {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  z-index: 5;
+  display: flex;
+  gap: 1rem;
+  color: var(--runner-accent);
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--runner-accent) 45%, transparent);
+}
+
+.game-message {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  color: var(--runner-fg);
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-shadow: 0 0 18px rgba(var(--cyan-rgb), 0.32);
+}
+
+.dino-game.ended .game-message {
+  color: #fecaca;
+  text-shadow: 0 0 18px rgba(248, 113, 113, 0.48);
+}
+
+.ground,
+.ground-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+}
+
+.ground {
+  bottom: 58px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--runner-muted), transparent);
+}
+
+.ground-dots {
+  bottom: 49px;
+  height: 12px;
+  background:
+    linear-gradient(90deg, transparent 0 24px, var(--runner-muted) 24px 32px, transparent 32px 72px, var(--runner-muted) 72px 76px, transparent 76px 120px),
+    linear-gradient(90deg, transparent 0 38px, var(--runner-muted) 38px 42px, transparent 42px 92px, var(--runner-muted) 92px 101px, transparent 101px 150px),
+    linear-gradient(90deg, transparent 0 16px, var(--runner-muted) 16px 19px, transparent 19px 64px, var(--runner-muted) 64px 67px, transparent 67px 120px);
+  background-size: 160px 100%, 180px 100%, 130px 100%;
+  opacity: 0.66;
+}
+
+.ground-dots.move {
+  animation: chromeGroundMove 0.75s linear infinite;
+}
+
+.chrome-dino,
+.chrome-cactus {
+  position: absolute;
+  z-index: 4;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.chrome-dino {
+  left: 58px;
+  bottom: 60px;
+  width: 62px;
+  height: 68px;
+  transform-origin: bottom center;
+}
+
+.dino-fill,
+.dino-leg rect {
+  fill: var(--runner-fg);
+}
+
+.dino-cutout {
+  fill: var(--runner-bg);
+}
+
+.dino-leg .leg-tucked {
+  opacity: 0;
+}
+
+.chrome-dino.run .leg-front .leg-extended,
+.chrome-dino.run .leg-back .leg-tucked {
+  animation: dinoLegFrameA 0.22s steps(1) infinite;
+}
+
+.chrome-dino.run .leg-front .leg-tucked,
+.chrome-dino.run .leg-back .leg-extended {
+  animation: dinoLegFrameB 0.22s steps(1) infinite;
+}
+
+.chrome-dino.jump {
+  animation: chromeDinoJump 0.62s ease-out;
+}
+
+.chrome-cactus {
+  right: var(--cactus-start, -84px);
+  bottom: 60px;
+  height: 58px;
+}
+
+.cactus-single {
+  width: 32px;
+}
+
+.cactus-double {
+  width: 52px;
+}
+
+.cactus-triple {
+  width: 74px;
+}
+
+.cactus-fill {
+  fill: var(--runner-obstacle);
+}
+
+.chrome-cactus.move {
+  animation: chromeCactusMove var(--cactus-duration, 1.45s) linear 1 both;
+}
+
+.cloud {
+  --cloud-scale: 1;
+  --cloud-speed: 18s;
+  position: absolute;
+  z-index: 2;
+  width: 78px;
+  opacity: 0.5;
+  transform: translateX(0) scale(var(--cloud-scale));
+  animation: cloudDrift var(--cloud-speed) ease-in-out infinite;
+}
+
+.cloud-pixel {
+  fill: none;
+  stroke: rgba(var(--cyan-rgb), 0.42);
+  stroke-width: 1.4;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.cloud-one {
+  top: 58px;
+  right: 15%;
+  --cloud-speed: 13s;
+}
+
+.cloud-two {
+  top: 104px;
+  right: 44%;
+  --cloud-scale: 0.72;
+  --cloud-speed: 16s;
+}
+
+.cloud-three {
+  top: 78px;
+  right: 68%;
+  --cloud-scale: 0.82;
+  --cloud-speed: 14s;
+}
+
+@keyframes chromeCactusMove {
+  from {
+    right: var(--cactus-start, -84px);
+  }
+
+  to {
+    right: calc(100% + 90px);
+  }
+}
+
+@keyframes chromeGroundMove {
+  from {
+    background-position: 0 0, 0 0, 0 0;
+  }
+
+  to {
+    background-position: -160px 0, -180px 0, -130px 0;
+  }
+}
+
+@keyframes runnerGridDrift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+
+  to {
+    background-position: -72px 0, -72px 0;
+  }
+}
+
+@keyframes cloudDrift {
+  0%,
+  100% {
+    transform: translateX(0) scale(var(--cloud-scale));
+  }
+
+  50% {
+    transform: translateX(-24px) scale(var(--cloud-scale));
+  }
+}
+
+@keyframes chromeDinoJump {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(-118px);
+  }
+
+  68% {
+    transform: translateY(-112px);
+  }
+}
+
+@keyframes dinoLegFrameA {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes dinoLegFrameB {
+  0%,
+  49% {
+    opacity: 0;
+  }
+
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 620px) {
+  .game-screen {
+    height: 245px;
+  }
+
+  .score-board {
+    top: 14px;
+    right: 14px;
+    gap: 0.7rem;
+    font-size: 0.76rem;
+  }
+
+  .chrome-dino {
+    left: 34px;
+    bottom: 54px;
+    width: 52px;
+    height: 58px;
+  }
+
+  .chrome-cactus {
+    bottom: 54px;
+    height: 48px;
+  }
+
+  .ground {
+    bottom: 52px;
+  }
+
+  .ground-dots {
+    bottom: 43px;
+  }
+
+  @keyframes chromeDinoJump {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    45% {
+      transform: translateY(-92px);
+    }
+
+    68% {
+      transform: translateY(-88px);
+    }
+  }
+}

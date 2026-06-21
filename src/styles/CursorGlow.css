@@ -1,0 +1,121 @@
+.cursor-system {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 30000;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(var(--cursor-x, 50vw), var(--cursor-y, 50vh), 0) translate(-50%, -50%);
+  transition:
+    opacity 0.18s ease,
+    width 0.18s ease,
+    height 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+  will-change: transform, opacity;
+}
+
+.cursor-system.is-visible {
+  opacity: 1;
+}
+
+.cursor-system-core {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 18px rgba(var(--cyan-rgb), 0.85),
+    0 0 32px rgba(var(--green-rgb), 0.24);
+}
+
+.cursor-system-ring {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(var(--cyan-rgb), 0.54);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(var(--cyan-rgb), 0.1) 0 18%, transparent 19%),
+    rgba(var(--cyan-rgb), 0.025);
+  box-shadow:
+    inset 0 0 16px rgba(var(--cyan-rgb), 0.12),
+    0 0 28px rgba(var(--cyan-rgb), 0.22);
+}
+
+.cursor-system-ring::before,
+.cursor-system-ring::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.cursor-system-ring::before {
+  background: conic-gradient(
+    from 0deg,
+    rgba(var(--cyan-rgb), 0.95),
+    transparent 64deg,
+    rgba(var(--green-rgb), 0.8),
+    transparent 168deg,
+    rgba(var(--violet-rgb), 0.68),
+    transparent 290deg,
+    rgba(var(--cyan-rgb), 0.95)
+  );
+  mask: radial-gradient(circle, transparent 0 57%, #000 58% 66%, transparent 67%);
+  animation: cursorSpin 10s linear infinite;
+}
+
+.cursor-system-ring::after {
+  inset: 50% auto auto 50%;
+  width: 4px;
+  height: 4px;
+  background: var(--green);
+  box-shadow:
+    20px 0 0 rgba(var(--cyan-rgb), 0.64),
+    -20px 0 0 rgba(var(--violet-rgb), 0.5),
+    0 0 18px rgba(var(--green-rgb), 0.9);
+  transform: translate(-50%, -50%);
+  animation: cursorMarkerSpin 14s linear infinite reverse;
+}
+
+.cursor-system-core.is-active {
+  width: 10px;
+  height: 10px;
+  background: var(--green);
+}
+
+.cursor-system-ring.is-active {
+  width: 56px;
+  height: 56px;
+  border-color: rgba(var(--green-rgb), 0.72);
+  background:
+    radial-gradient(circle, rgba(var(--green-rgb), 0.11) 0 18%, transparent 19%),
+    rgba(var(--green-rgb), 0.04);
+}
+
+@keyframes cursorSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cursorMarkerSpin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 850px) {
+  .cursor-system {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-system-ring::before,
+  .cursor-system-ring::after {
+    animation: none;
+  }
+}

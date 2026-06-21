@@ -1,0 +1,81 @@
+.scroll-progress {
+  position: fixed;
+  top: 50%;
+  right: 1.15rem;
+  z-index: 90;
+  display: grid;
+  grid-template-columns: 2px auto;
+  gap: 0.8rem;
+  align-items: center;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.scroll-progress-line {
+  position: relative;
+  width: 2px;
+  height: 15rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(180, 196, 220, 0.14);
+}
+
+.scroll-progress-line span {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--cyan), var(--green), var(--violet));
+  box-shadow: 0 0 18px rgba(var(--cyan-rgb), 0.38);
+  transform-origin: top;
+}
+
+.scroll-progress nav {
+  display: grid;
+  gap: 0.58rem;
+}
+
+.scroll-progress a {
+  display: flex;
+  align-items: center;
+  gap: 0.48rem;
+  color: rgba(226, 238, 255, 0.52);
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  pointer-events: auto;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.scroll-progress a span {
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgba(var(--cyan-rgb), 0.48);
+  border-radius: 50%;
+  background: rgba(2, 3, 7, 0.8);
+  box-shadow: 0 0 10px rgba(var(--cyan-rgb), 0.12);
+}
+
+.scroll-progress a strong {
+  font-weight: 700;
+}
+
+.scroll-progress a:hover,
+.scroll-progress a:focus-visible {
+  color: var(--text);
+  outline: none;
+  transform: translateX(-3px);
+}
+
+.scroll-progress a:hover span,
+.scroll-progress a:focus-visible span {
+  background: var(--green);
+  border-color: rgba(var(--green-rgb), 0.9);
+  box-shadow: 0 0 16px rgba(var(--green-rgb), 0.55);
+}
+
+@media (max-width: 1120px) {
+  .scroll-progress {
+    display: none;
+  }
+}

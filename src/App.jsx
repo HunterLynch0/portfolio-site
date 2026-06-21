@@ -861,7 +861,7 @@ function App() {
               <div>
                 <p className="label">Contact</p>
                 <h2>Let's connect</h2>
-                <p className="text">Open to collaboration and job opportunities.</p>
+                <p className="text">Open to Internships, Software Engineering roles, and serious project collaborations.</p>
               </div>
 
               <div className="actions contact-actions">
