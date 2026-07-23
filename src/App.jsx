@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DinoGame from "./DinoGame";
 import IntroScreen from "./IntroScreen";
 import {
@@ -213,141 +213,9 @@ function getHeatmapMonthLabels(heatmap) {
 
 function App() {
   const [isIntroActive, setIsIntroActive] = useState(true);
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
-  const [cursorVisible, setCursorVisible] = useState(false);
-  const [cursorActive, setCursorActive] = useState(false);
   const [openProjectIds, setOpenProjectIds] = useState(() => new Set());
   const [githubHeatmap, setGithubHeatmap] = useState(() => buildHeatmapData());
   const [githubContributionTotal, setGithubContributionTotal] = useState(null);
-
-  const cursorInfoRef = useRef({
-    x: 0,
-    y: 0,
-    visible: false,
-  });
-
-  const cursorActiveRef = useRef(false);
-  const lastTechHoverRef = useRef(null);
-
-  useEffect(() => {
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-    let animationFrame;
-
-    const clearTechHover = (element) => {
-      if (!element) return;
-
-      const relatedElements = [
-        element,
-        element.previousElementSibling,
-        element.previousElementSibling?.previousElementSibling,
-        element.nextElementSibling,
-        element.nextElementSibling?.nextElementSibling,
-      ];
-
-      relatedElements.forEach((item) => {
-        item?.classList.remove("tech-hovered", "tech-near", "tech-far");
-      });
-    };
-
-    const applyTechHover = (element) => {
-      if (!element) return;
-
-      element.classList.add("tech-hovered");
-
-      element.previousElementSibling?.classList.add("tech-near");
-      element.nextElementSibling?.classList.add("tech-near");
-
-      element.previousElementSibling?.previousElementSibling?.classList.add("tech-far");
-      element.nextElementSibling?.nextElementSibling?.classList.add("tech-far");
-    };
-
-    const updateElementUnderCursor = () => {
-      const { x, y, visible } = cursorInfoRef.current;
-
-      if (!visible) return;
-
-      const elementUnderCursor = document.elementFromPoint(x, y);
-
-      const hoverTarget = elementUnderCursor?.closest(
-          "a, button, .dino-game, .tech-track span"
-      );
-
-      const techTarget = hoverTarget?.matches(".tech-track span")
-          ? hoverTarget
-          : null;
-
-      if (lastTechHoverRef.current !== techTarget) {
-        clearTechHover(lastTechHoverRef.current);
-
-        if (techTarget) {
-          applyTechHover(techTarget);
-        }
-
-        lastTechHoverRef.current = techTarget;
-      }
-
-      const nextCursorActive = Boolean(hoverTarget);
-
-      if (cursorActiveRef.current !== nextCursorActive) {
-        cursorActiveRef.current = nextCursorActive;
-        setCursorActive(nextCursorActive);
-      }
-    };
-
-    const moveCursor = (event) => {
-      targetX = event.clientX;
-      targetY = event.clientY;
-
-      cursorInfoRef.current = {
-        x: event.clientX,
-        y: event.clientY,
-        visible: true,
-      };
-
-      setCursorPosition({ x: event.clientX, y: event.clientY });
-      setCursorVisible(true);
-    };
-
-    const animate = () => {
-      currentX += (targetX - currentX) * 0.03;
-      currentY += (targetY - currentY) * 0.03;
-
-      document.documentElement.style.setProperty("--glow-x", `${currentX}px`);
-      document.documentElement.style.setProperty("--glow-y", `${currentY}px`);
-
-      updateElementUnderCursor();
-
-      animationFrame = requestAnimationFrame(animate);
-    };
-
-    const hideCursor = () => {
-      cursorInfoRef.current.visible = false;
-
-      setCursorVisible(false);
-      setCursorActive(false);
-
-      cursorActiveRef.current = false;
-
-      clearTechHover(lastTechHoverRef.current);
-      lastTechHoverRef.current = null;
-    };
-
-    window.addEventListener("pointermove", moveCursor);
-    window.addEventListener("pointerleave", hideCursor);
-
-    animate();
-
-    return () => {
-      window.removeEventListener("pointermove", moveCursor);
-      window.removeEventListener("pointerleave", hideCursor);
-      cancelAnimationFrame(animationFrame);
-
-      clearTechHover(lastTechHoverRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     let ignoreResponse = false;
@@ -385,10 +253,6 @@ function App() {
       : `${githubContributionTotal} contributions in the last year`;
   const githubMonthLabels = getHeatmapMonthLabels(githubHeatmap);
 
-  const cursorClassName = `custom-cursor ${cursorVisible ? "visible" : ""} ${
-      cursorActive ? "active" : ""
-  }`;
-
   const toggleProjectArchitecture = (projectId) => {
     setOpenProjectIds((currentOpenProjectIds) => {
       const nextOpenProjectIds = new Set(currentOpenProjectIds);
@@ -411,42 +275,38 @@ function App() {
       <>
         <IntroScreen onComplete={handleIntroComplete} />
 
-        <div
-            className={`${cursorClassName} cursor-ring`}
-            style={{
-              left: `${cursorPosition.x}px`,
-              top: `${cursorPosition.y}px`,
-            }}
-        ></div>
-
-        <div
-            className={`${cursorClassName} cursor-dot`}
-            style={{
-              left: `${cursorPosition.x}px`,
-              top: `${cursorPosition.y}px`,
-            }}
-        ></div>
-
         <main
             className={`page ${isIntroActive ? "page-intro-hidden" : ""}`}
             inert={isIntroActive ? "" : undefined}
             aria-hidden={isIntroActive ? "true" : undefined}
         >
-          <section className="hero-grid">
-            <div className="terminal">
-              <div className="terminal-header">
-                <div className="buttons">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <p>Hunter Lynch · Portfolio</p>
-              </div>
+          <header className="site-header">
+            <a className="site-brand" href="#about" aria-label="Hunter Lynch home">
+              Hunter Lynch
+            </a>
 
+            <nav className="site-nav" aria-label="Primary navigation">
+              <a href="#about">About</a>
+              <a href="#projects">Projects</a>
+              <a href="#skills">Skills</a>
+              <a href="#contact">Contact</a>
+              <a
+                  href="/Resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="site-nav-resume"
+              >
+                Resume
+              </a>
+            </nav>
+          </header>
+
+          <section id="about" className="hero-grid" aria-labelledby="about-heading">
+            <div className="terminal">
               <div className="terminal-body">
                 <p className="label">About</p>
 
-                <h1>Hunter Lynch</h1>
+                <h1 id="about-heading">Hunter Lynch</h1>
                 <h2>Software Engineering Student</h2>
 
                 <div className="hero-status-row" aria-label="Profile highlights">
@@ -488,9 +348,6 @@ function App() {
                   >
                     View Resume
                   </a>
-                  <a href="#projects">Projects</a>
-                  <a href="#skills">Skills</a>
-                  <a href="#contact">Contact</a>
                 </div>
               </div>
             </div>

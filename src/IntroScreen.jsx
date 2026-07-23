@@ -34,7 +34,6 @@ function IntroScreen({ onComplete }) {
         <div className="intro-grid"></div>
 
         <div className="intro-title-shell">
-          <span className="intro-system-line" aria-hidden="true">PORTFOLIO_BOOT</span>
           <div className="intro-name" data-text="Hunter Lynch" aria-hidden="true">
             Hunter Lynch
           </div>
