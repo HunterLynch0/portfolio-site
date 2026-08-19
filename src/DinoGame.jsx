@@ -8,8 +8,8 @@ const CACTUS_VIEW_BOXES = {
 };
 const CACTUS_BASE_DURATION = 1.45;
 const CACTUS_MAX_SPEED = 1.45;
-const CACTUS_MAX_START_OFFSET = -84;
-const CACTUS_MIN_START_OFFSET = -52;
+const CACTUS_MAX_START_OFFSET = 84;
+const CACTUS_MIN_START_OFFSET = 52;
 const HIGH_SCORE_STORAGE_KEY = "portfolio-dino-high-score";
 
 function getRandomNumber(min, max) {
@@ -41,6 +41,10 @@ function createCactusObstacle(score = 0) {
     };
 }
 
+function formatScore(score) {
+    return String(score).padStart(5, "0");
+}
+
 function getSavedHighScore() {
     if (typeof window === "undefined") return 0;
 
@@ -52,31 +56,78 @@ function getSavedHighScore() {
 }
 
 function DinoGame() {
+    const [initialHighScore] = useState(getSavedHighScore);
     const [isJumping, setIsJumping] = useState(false);
     const [gameStarted, setGameStarted] = useState(false);
     const [gameOver, setGameOver] = useState(false);
-    const [scores, setScores] = useState(() => ({
+    const [scoreSnapshot, setScoreSnapshot] = useState(() => ({
         score: 0,
-        highScore: getSavedHighScore(),
+        highScore: initialHighScore,
     }));
     const [cactusObstacle, setCactusObstacle] = useState(() => createCactusObstacle(0));
 
     const dinoRef = useRef(null);
     const cactusRef = useRef(null);
+    const scoreDisplayRef = useRef(null);
+    const highScoreDisplayRef = useRef(null);
+    const scoreRef = useRef(0);
+    const highScoreRef = useRef(initialHighScore);
+    const jumpTimeoutRef = useRef(null);
+    const collisionFrameRef = useRef(null);
+    const lastCollisionCheckRef = useRef(0);
     const cactusVariant = cactusObstacle.variant;
     const cactusViewBox = CACTUS_VIEW_BOXES[cactusVariant];
-    const { score, highScore } = scores;
+
+    const syncScoreDisplay = useCallback(() => {
+        if (scoreDisplayRef.current) {
+            scoreDisplayRef.current.textContent = formatScore(scoreRef.current);
+        }
+
+        if (highScoreDisplayRef.current) {
+            highScoreDisplayRef.current.textContent = `HI ${formatScore(highScoreRef.current)}`;
+        }
+    }, []);
+
+    const persistHighScore = useCallback(() => {
+        try {
+            window.localStorage.setItem(HIGH_SCORE_STORAGE_KEY, String(highScoreRef.current));
+        } catch {
+            // Ignore storage failures; the live high score still works.
+        }
+    }, []);
+
+    const commitScoreSnapshot = useCallback(() => {
+        const nextScoreSnapshot = {
+            score: scoreRef.current,
+            highScore: highScoreRef.current,
+        };
+
+        setScoreSnapshot((currentScoreSnapshot) => {
+            if (
+                currentScoreSnapshot.score === nextScoreSnapshot.score &&
+                currentScoreSnapshot.highScore === nextScoreSnapshot.highScore
+            ) {
+                return currentScoreSnapshot;
+            }
+
+            return nextScoreSnapshot;
+        });
+    }, []);
 
     const resetGame = useCallback(() => {
+        if (jumpTimeoutRef.current !== null) {
+            window.clearTimeout(jumpTimeoutRef.current);
+            jumpTimeoutRef.current = null;
+        }
+
+        scoreRef.current = 0;
+        syncScoreDisplay();
+        commitScoreSnapshot();
         setGameStarted(false);
         setGameOver(false);
-        setScores((currentScores) => ({
-            ...currentScores,
-            score: 0,
-        }));
         setIsJumping(false);
         setCactusObstacle(createCactusObstacle(0));
-    }, []);
+    }, [commitScoreSnapshot, syncScoreDisplay]);
 
     const jump = useCallback(() => {
         if (gameOver) {
@@ -85,27 +136,34 @@ function DinoGame() {
         }
 
         if (!gameStarted) {
+            scoreRef.current = 0;
+            syncScoreDisplay();
+            commitScoreSnapshot();
             setGameStarted(true);
-            setScores((currentScores) => ({
-                ...currentScores,
-                score: 0,
-            }));
         }
 
         if (!isJumping) {
+            commitScoreSnapshot();
             setIsJumping(true);
 
-            setTimeout(() => {
+            if (jumpTimeoutRef.current !== null) {
+                window.clearTimeout(jumpTimeoutRef.current);
+            }
+
+            jumpTimeoutRef.current = window.setTimeout(() => {
+                commitScoreSnapshot();
                 setIsJumping(false);
+                jumpTimeoutRef.current = null;
             }, 620);
         }
-    }, [gameOver, gameStarted, isJumping, resetGame]);
+    }, [commitScoreSnapshot, gameOver, gameStarted, isJumping, resetGame, syncScoreDisplay]);
 
     const spawnNextCactus = useCallback((event) => {
         if (event.target !== event.currentTarget || !gameStarted || gameOver) return;
 
-        setCactusObstacle(createCactusObstacle(score));
-    }, [gameOver, gameStarted, score]);
+        commitScoreSnapshot();
+        setCactusObstacle(createCactusObstacle(scoreRef.current));
+    }, [commitScoreSnapshot, gameOver, gameStarted]);
 
     useEffect(() => {
         function handleKeyDown(event) {
@@ -125,36 +183,33 @@ function DinoGame() {
     useEffect(() => {
         if (!gameStarted || gameOver) return;
 
-        const scoreTimer = setInterval(() => {
-            setScores((currentScores) => {
-                const nextScore = currentScores.score + 1;
-
-                return {
-                    score: nextScore,
-                    highScore: Math.max(currentScores.highScore, nextScore),
-                };
-            });
+        const scoreTimer = window.setInterval(() => {
+            scoreRef.current += 1;
+            highScoreRef.current = Math.max(highScoreRef.current, scoreRef.current);
+            syncScoreDisplay();
         }, 100);
 
-        return () => clearInterval(scoreTimer);
-    }, [gameStarted, gameOver]);
-
-    useEffect(() => {
-        try {
-            window.localStorage.setItem(HIGH_SCORE_STORAGE_KEY, String(highScore));
-        } catch {
-            // Ignore storage failures; the live high score still works.
-        }
-    }, [highScore]);
+        return () => window.clearInterval(scoreTimer);
+    }, [gameStarted, gameOver, syncScoreDisplay]);
 
     useEffect(() => {
         if (!gameStarted || gameOver) return;
 
-        const collisionTimer = setInterval(() => {
+        const checkCollision = (timestamp) => {
+            if (timestamp - lastCollisionCheckRef.current < 32) {
+                collisionFrameRef.current = window.requestAnimationFrame(checkCollision);
+                return;
+            }
+
+            lastCollisionCheckRef.current = timestamp;
+
             const dino = dinoRef.current;
             const cactus = cactusRef.current;
 
-            if (!dino || !cactus) return;
+            if (!dino || !cactus) {
+                collisionFrameRef.current = window.requestAnimationFrame(checkCollision);
+                return;
+            }
 
             const dinoBox = dino.getBoundingClientRect();
             const cactusBox = cactus.getBoundingClientRect();
@@ -165,13 +220,39 @@ function DinoGame() {
                 dinoBox.bottom > cactusBox.top + 8;
 
             if (collision) {
+                commitScoreSnapshot();
+                persistHighScore();
                 setGameOver(true);
                 setGameStarted(false);
+                return;
             }
-        }, 20);
 
-        return () => clearInterval(collisionTimer);
-    }, [gameStarted, gameOver]);
+            collisionFrameRef.current = window.requestAnimationFrame(checkCollision);
+        };
+
+        collisionFrameRef.current = window.requestAnimationFrame(checkCollision);
+
+        return () => {
+            if (collisionFrameRef.current !== null) {
+                window.cancelAnimationFrame(collisionFrameRef.current);
+                collisionFrameRef.current = null;
+            }
+        };
+    }, [commitScoreSnapshot, gameStarted, gameOver, persistHighScore]);
+
+    useEffect(() => (
+        () => {
+            if (jumpTimeoutRef.current !== null) {
+                window.clearTimeout(jumpTimeoutRef.current);
+            }
+
+            if (collisionFrameRef.current !== null) {
+                window.cancelAnimationFrame(collisionFrameRef.current);
+            }
+
+            persistHighScore();
+        }
+    ), [persistHighScore]);
 
     return (
         <section className="section dino-section">
@@ -187,8 +268,8 @@ function DinoGame() {
             >
                 <div className="game-screen">
                     <div className="score-board">
-                        <span>HI {String(highScore).padStart(5, "0")}</span>
-                        <span>{String(score).padStart(5, "0")}</span>
+                        <span ref={highScoreDisplayRef}>HI {formatScore(scoreSnapshot.highScore)}</span>
+                        <span ref={scoreDisplayRef}>{formatScore(scoreSnapshot.score)}</span>
                     </div>
 
                     {!gameStarted && !gameOver && (

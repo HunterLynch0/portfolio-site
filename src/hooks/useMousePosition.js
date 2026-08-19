@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import usePrefersReducedMotion from "./usePrefersReducedMotion";
 
+const interactiveCursorSelector = "a, button, .tilt-surface, .dino-game";
+
 function useMousePosition() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const pointerRef = useRef({
@@ -27,52 +29,67 @@ function useMousePosition() {
       frameId = null;
 
       const pointer = pointerRef.current;
+      if (!pointer.visible) return;
+
       pointer.x += (pointer.targetX - pointer.x) * 0.18;
       pointer.y += (pointer.targetY - pointer.y) * 0.18;
-
-      const hoverTarget = pointer.visible
-        ? document.elementFromPoint(pointer.targetX, pointer.targetY)?.closest("a, button, .tilt-surface, .dino-game")
-        : null;
-      pointer.active = Boolean(hoverTarget);
 
       document.documentElement.style.setProperty("--glow-x", `${pointer.x.toFixed(1)}px`);
       document.documentElement.style.setProperty("--glow-y", `${pointer.y.toFixed(1)}px`);
       document.documentElement.style.setProperty("--cursor-x", `${pointer.x.toFixed(1)}px`);
       document.documentElement.style.setProperty("--cursor-y", `${pointer.y.toFixed(1)}px`);
 
+      const isSettled =
+        Math.abs(pointer.targetX - pointer.x) < 0.15 &&
+        Math.abs(pointer.targetY - pointer.y) < 0.15;
+
+      if (!isSettled) {
+        frameId = window.requestAnimationFrame(publishPointerState);
+      }
+    };
+
+    const requestPointerFrame = () => {
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(publishPointerState);
+    };
+
+    const syncPointerClassState = (visible, active) => {
+      const pointer = pointerRef.current;
+      if (pointer.visible === visible && pointer.active === active) return;
+
+      pointer.visible = visible;
+      pointer.active = active;
+
       setPointerState((current) => {
-        if (current.visible === pointer.visible && current.active === pointer.active) {
+        if (current.visible === visible && current.active === active) {
           return current;
         }
 
         return {
-          visible: pointer.visible,
-          active: pointer.active,
+          visible,
+          active,
         };
       });
-
-      frameId = window.requestAnimationFrame(publishPointerState);
     };
 
     const handlePointerMove = (event) => {
       pointerRef.current.targetX = event.clientX;
       pointerRef.current.targetY = event.clientY;
-      pointerRef.current.visible = true;
+
+      const active = event.target instanceof Element
+        ? Boolean(event.target.closest(interactiveCursorSelector))
+        : false;
+
+      syncPointerClassState(true, active);
+      requestPointerFrame();
     };
 
     const handlePointerLeave = () => {
-      pointerRef.current.visible = false;
-      pointerRef.current.active = false;
-      setPointerState((current) => ({
-        ...current,
-        visible: false,
-        active: false,
-      }));
+      syncPointerClassState(false, false);
     };
 
-    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerleave", handlePointerLeave);
-    frameId = window.requestAnimationFrame(publishPointerState);
 
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);

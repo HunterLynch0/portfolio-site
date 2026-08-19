@@ -5,6 +5,10 @@ const clamp = (value, min = 0, max = 1) => Math.min(Math.max(value, min), max);
 
 export function useScrollProgress() {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const scrollStateRef = useRef({
+    progress: 0,
+    scrollY: 0,
+  });
   const [scrollState, setScrollState] = useState({
     progress: 0,
     scrollY: 0,
@@ -26,7 +30,16 @@ export function useScrollProgress() {
       document.documentElement.style.setProperty("--page-progress", progress.toFixed(4));
       document.documentElement.style.setProperty("--scroll-y", `${scrollY.toFixed(0)}px`);
 
-      setScrollState({ progress, scrollY });
+      const current = scrollStateRef.current;
+      const nextState = { progress, scrollY };
+
+      if (
+        Math.abs(current.progress - progress) >= 0.002 ||
+        Math.abs(current.scrollY - scrollY) >= 12
+      ) {
+        scrollStateRef.current = nextState;
+        setScrollState(nextState);
+      }
     };
 
     const requestUpdate = () => {

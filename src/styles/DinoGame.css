@@ -164,6 +164,7 @@
   z-index: 4;
   display: block;
   image-rendering: pixelated;
+  will-change: transform;
 }
 
 .chrome-dino {
@@ -202,9 +203,19 @@
 }
 
 .chrome-cactus {
-  right: var(--cactus-start, -84px);
+  --cactus-scale: 1;
+  --cactus-travel: calc(-100vw - 120px);
+
+  left: 100%;
   bottom: 60px;
   height: 58px;
+  transform: translate3d(var(--cactus-start, 84px), 0, 0) scale(var(--cactus-scale));
+}
+
+@supports (width: 1cqw) {
+  .chrome-cactus {
+    --cactus-travel: calc(-100cqw - 120px);
+  }
 }
 
 .cactus-single {
@@ -268,11 +279,11 @@
 
 @keyframes chromeCactusMove {
   from {
-    right: var(--cactus-start, -84px);
+    transform: translate3d(var(--cactus-start, 84px), 0, 0) scale(var(--cactus-scale));
   }
 
   to {
-    right: calc(100% + 90px);
+    transform: translate3d(var(--cactus-travel), 0, 0) scale(var(--cactus-scale));
   }
 }
 

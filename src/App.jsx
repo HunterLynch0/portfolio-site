@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DinoGame from "./DinoGame";
 import IntroScreen from "./IntroScreen";
 import {
@@ -24,14 +24,14 @@ const projects = [
     title: "IssueFlow — Full-Stack Issue Tracker",
     type: "Project",
     featured: true,
-    image: "/issueflow-preview-1.png",
+    image: "/issueflow-preview-1-display.png",
     expandedImages: [
       {
-        src: "/issueflow-preview-2.png",
+        src: "/issueflow-preview-2-display.png",
         alt: "IssueFlow dashboard preview",
       },
       {
-        src: "/issueflow-preview-3.png",
+        src: "/issueflow-preview-3-display.png",
         alt: "IssueFlow issue workflow preview",
       },
     ],
@@ -65,7 +65,7 @@ const projects = [
     id: "versionhandle",
     title: "VersionHandle — Version Control CLI",
     type: "Personal Project",
-    image: "/versionhandle-preview.png",
+    image: "/versionhandle-preview-display.png",
     description:
         "A lightweight version control system, inspired by Git, built from scratch as a Java CLI tool. Supports repository initialization, staging, commits, status, logs, branches, checkout, and merges with conflict markers.",
     badges: ["Backend", "CLI Tool", "Data Structures"],
@@ -92,7 +92,7 @@ const projects = [
     id: "andie",
     title: "ANDIE — Java Swing Image Editor",
     type: "Group Project",
-    image: "/andie-preview-1.png",
+    image: "/andie-preview-1-display.png",
     description:
         "A non destructive Java Swing image editor built for COSC202. Includes image filters, colour tools, transforms, drawing tools, Internationalisation - I18N, and light/dark theme support.",
     badges: ["Group Project", "Desktop App", "Java UI"],
@@ -211,6 +211,10 @@ function getHeatmapMonthLabels(heatmap) {
   });
 }
 
+function hideBrokenImage(event) {
+  event.currentTarget.hidden = true;
+}
+
 function App() {
   const [isIntroActive, setIsIntroActive] = useState(true);
   const [openProjectIds, setOpenProjectIds] = useState(() => new Set());
@@ -218,9 +222,12 @@ function App() {
   const [githubContributionTotal, setGithubContributionTotal] = useState(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     let ignoreResponse = false;
 
-    fetch(`https://github-contributions-api.jogruber.de/v4/${githubUsername}?y=last`)
+    fetch(`https://github-contributions-api.jogruber.de/v4/${githubUsername}?y=last`, {
+      signal: controller.signal,
+    })
         .then((response) => {
           if (!response.ok) {
             throw new Error("Unable to load GitHub contributions");
@@ -239,21 +246,26 @@ function App() {
               )
           );
         })
-        .catch(() => {
+        .catch((error) => {
+          if (error.name === "AbortError") return;
           // Keep the empty styled heatmap if the public contribution API is unavailable.
         });
 
     return () => {
       ignoreResponse = true;
+      controller.abort();
     };
   }, []);
 
   const githubContributionLabel = githubContributionTotal === null
       ? "Recent GitHub activity"
       : `${githubContributionTotal} contributions in the last year`;
-  const githubMonthLabels = getHeatmapMonthLabels(githubHeatmap);
+  const githubMonthLabels = useMemo(
+      () => getHeatmapMonthLabels(githubHeatmap),
+      [githubHeatmap]
+  );
 
-  const toggleProjectArchitecture = (projectId) => {
+  const toggleProjectArchitecture = useCallback((projectId) => {
     setOpenProjectIds((currentOpenProjectIds) => {
       const nextOpenProjectIds = new Set(currentOpenProjectIds);
 
@@ -265,7 +277,7 @@ function App() {
 
       return nextOpenProjectIds;
     });
-  };
+  }, []);
 
   const handleIntroComplete = useCallback(() => {
     setIsIntroActive(false);
@@ -357,9 +369,12 @@ function App() {
                 <p className="label">Featured Project</p>
                 <div className="project-title-row">
                   <img
-                      src="/issue-flow-icon.png"
+                      src="/issue-flow-icon-display.png"
                       alt="IssueFlow logo"
                       className="project-logo"
+                      width="94"
+                      height="96"
+                      decoding="async"
                   />
                   <div>
                     <h2>IssueFlow</h2>
@@ -370,11 +385,13 @@ function App() {
 
               <div className="featured-preview-media" aria-label="IssueFlow preview">
                 <img
-                    src="/issueflow-preview-4.png"
+                    src="/issueflow-preview-4-display.png"
                     alt="IssueFlow preview"
-                    onError={(event) => {
-                      event.currentTarget.hidden = true;
-                    }}
+                    width="1200"
+                    height="505"
+                    decoding="async"
+                    fetchPriority="high"
+                    onError={hideBrokenImage}
                 />
               </div>
 
@@ -483,9 +500,9 @@ function App() {
                                     <img
                                         src={image.src}
                                         alt={image.alt}
-                                        onError={(event) => {
-                                          event.currentTarget.hidden = true;
-                                        }}
+                                        loading="lazy"
+                                        decoding="async"
+                                        onError={hideBrokenImage}
                                     />
                                   </div>
                               ))}
@@ -494,9 +511,9 @@ function App() {
                             <img
                                 src={project.image}
                                 alt={`${project.title} preview`}
-                                onError={(event) => {
-                                  event.currentTarget.hidden = true;
-                                }}
+                                loading="lazy"
+                                decoding="async"
+                                onError={hideBrokenImage}
                             />
                         )}
                         <div className="project-media-overlay">

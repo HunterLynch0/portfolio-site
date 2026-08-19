@@ -95,7 +95,7 @@ body::before {
   filter: blur(14px) saturate(1.18);
   opacity: 0.78;
   animation: auroraDrift 24s ease-in-out infinite alternate;
-  will-change: background-position, filter, opacity;
+  will-change: background-position, opacity;
 }
 
 /* Extra dark page depth over the moving aurora. */
@@ -131,7 +131,6 @@ body::after {
             84% 18%,
             0 0,
             0 0;
-    filter: blur(14px) saturate(1.12);
     opacity: 0.68;
   }
 
@@ -143,7 +142,6 @@ body::after {
             38% 58%,
             0 0,
             0 0;
-    filter: blur(18px) saturate(1.28);
     opacity: 0.84;
   }
 
@@ -155,7 +153,6 @@ body::after {
             14% 24%,
             0 0,
             0 0;
-    filter: blur(15px) saturate(1.2);
     opacity: 0.74;
   }
 }
@@ -854,7 +851,12 @@ h2 {
   color: #f5f5f5;
   border-radius: 10px;
   padding: 11px 14px;
-  transition: 0.2s ease;
+  transition:
+          transform 0.2s ease,
+          border-color 0.2s ease,
+          background 0.2s ease,
+          box-shadow 0.2s ease,
+          color 0.2s ease;
 }
 
 /* Subtle blue hover */
@@ -1035,7 +1037,10 @@ h2 {
   padding: 7px 10px;
   border-radius: 999px;
   font-size: 0.85rem;
-  transition: 0.2s ease;
+  transition:
+          border-color 0.2s ease,
+          background 0.2s ease,
+          color 0.2s ease;
 }
 
 .tech-list span:hover {
@@ -2153,6 +2158,7 @@ h2 {
 
 .game-screen {
   position: relative;
+  container-type: inline-size;
   height: 220px;
   overflow: hidden;
   background:
@@ -2312,15 +2318,19 @@ h2 {
   transform-origin: bottom left;
   z-index: 10;
   filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.24));
+  will-change: transform;
 }
 
 .chrome-dino {
+  --dino-scale: 1;
+
   left: 58px;
   bottom: 46px;
   width: 72px;
   height: 78px;
   overflow: visible;
   shape-rendering: crispEdges;
+  transform: translate3d(0, 0, 0) scale(var(--dino-scale));
 }
 
 .dino-fill,
@@ -2361,11 +2371,21 @@ h2 {
 }
 
 .chrome-cactus {
-  right: var(--cactus-start, -84px);
+  --cactus-scale: 1;
+  --cactus-travel: calc(-100vw - 120px);
+
+  left: 100%;
   bottom: 46px;
   height: 58px;
   overflow: visible;
   shape-rendering: crispEdges;
+  transform: translate3d(var(--cactus-start, 84px), 0, 0) scale(var(--cactus-scale));
+}
+
+@supports (width: 1cqw) {
+  .chrome-cactus {
+    --cactus-travel: calc(-100cqw - 120px);
+  }
 }
 
 .cactus-single {
@@ -2436,11 +2456,11 @@ h2 {
 
 @keyframes chromeCactusMove {
   from {
-    right: var(--cactus-start, -84px);
+    transform: translate3d(var(--cactus-start, 84px), 0, 0) scale(var(--cactus-scale));
   }
 
   to {
-    right: 105%;
+    transform: translate3d(var(--cactus-travel), 0, 0) scale(var(--cactus-scale));
   }
 }
 
@@ -2488,19 +2508,19 @@ h2 {
 
 @keyframes chromeDinoJump {
   0% {
-    bottom: 46px;
+    transform: translate3d(0, 0, 0) scale(var(--dino-scale));
   }
 
   42% {
-    bottom: 138px;
+    transform: translate3d(0, -92px, 0) scale(var(--dino-scale));
   }
 
   58% {
-    bottom: 138px;
+    transform: translate3d(0, -92px, 0) scale(var(--dino-scale));
   }
 
   100% {
-    bottom: 46px;
+    transform: translate3d(0, 0, 0) scale(var(--dino-scale));
   }
 }
 
@@ -2556,12 +2576,12 @@ h2 {
   .chrome-dino {
     left: 34px;
     bottom: 38px;
-    transform: scale(0.78);
+    --dino-scale: 0.78;
   }
 
   .chrome-cactus {
     bottom: 38px;
-    transform: scale(0.84);
+    --cactus-scale: 0.84;
   }
 
   .ground {
@@ -2574,19 +2594,19 @@ h2 {
 
   @keyframes chromeDinoJump {
     0% {
-      bottom: 38px;
+      transform: translate3d(0, 0, 0) scale(var(--dino-scale));
     }
 
     42% {
-      bottom: 118px;
+      transform: translate3d(0, -80px, 0) scale(var(--dino-scale));
     }
 
     58% {
-      bottom: 118px;
+      transform: translate3d(0, -80px, 0) scale(var(--dino-scale));
     }
 
     100% {
-      bottom: 38px;
+      transform: translate3d(0, 0, 0) scale(var(--dino-scale));
     }
   }
 }
@@ -2701,10 +2721,8 @@ h2 {
           0 0 22px rgba(96, 165, 250, 0.05);
   transform: scale(1);
   transform-origin: center center;
-  margin-inline: 0;
   transition:
           transform 0.22s ease,
-          margin 0.22s ease,
           border-color 0.22s ease,
           background 0.22s ease,
           box-shadow 0.22s ease,
@@ -2728,7 +2746,6 @@ h2 {
 .tech-track span:hover,
 .tech-track span.tech-hovered {
   transform: scale(1.26);
-  margin-inline: 18px;
   opacity: 1;
   border-color: rgba(96, 165, 250, 0.85);
   background:
@@ -2745,7 +2762,6 @@ h2 {
 .tech-track span.tech-hovered + span,
 .tech-track span.tech-near {
   transform: scale(1.12);
-  margin-inline: 8px;
   opacity: 0.95;
   z-index: 4;
 }
@@ -2755,7 +2771,6 @@ h2 {
 .tech-track span.tech-hovered + span + span,
 .tech-track span.tech-far {
   transform: scale(1.05);
-  margin-inline: 3px;
   opacity: 0.85;
   z-index: 3;
 }
@@ -2763,7 +2778,6 @@ h2 {
 /* Immediately previous icon */
 .tech-track span:has(+ span:hover) {
   transform: scale(1.12);
-  margin-inline: 8px;
   opacity: 0.95;
   z-index: 4;
 }
@@ -2771,7 +2785,6 @@ h2 {
 /* Two before */
 .tech-track span:has(+ span + span:hover) {
   transform: scale(1.05);
-  margin-inline: 3px;
   opacity: 0.85;
   z-index: 3;
 }
@@ -3113,5 +3126,28 @@ h2 {
 @media (max-width: 850px) {
   .featured-project .project-media {
     border-bottom-color: rgba(var(--accent-green-rgb), 0.16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .tech-track,
+  .tech-marquee,
+  .conveyor-rail,
+  .ground-dots.move,
+  .chrome-cactus.move,
+  .chrome-dino.jump,
+  .cloud,
+  .dino-game.running .game-screen::before,
+  .dino-game.running .game-screen::after {
+    animation: none !important;
   }
 }

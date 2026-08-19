@@ -7,6 +7,7 @@ import "../styles/ProjectShowcase.css";
 function ProjectShowcase({ projects }) {
   const sectionRef = useRef(null);
   const frameRef = useRef(null);
+  const virtualIndexRef = useRef(0);
   const prefersReducedMotion = usePrefersReducedMotion();
   const [virtualIndex, setVirtualIndex] = useState(0);
   const [isCompact, setIsCompact] = useState(false);
@@ -34,10 +35,15 @@ function ProjectShowcase({ projects }) {
       const scrollableDistance = Math.max(rect.height - window.innerHeight, 1);
       const progress = clamp(-rect.top / scrollableDistance, 0, 1);
       const sceneProgress = clamp((window.innerHeight - rect.top) / (window.innerHeight + rect.height), 0, 1);
+      const nextVirtualIndex = progress * (projects.length - 1);
 
       section.style.setProperty("--section-progress", sceneProgress.toFixed(4));
       section.style.setProperty("--project-progress", progress.toFixed(4));
-      setVirtualIndex(progress * (projects.length - 1));
+
+      if (Math.abs(virtualIndexRef.current - nextVirtualIndex) >= 0.006) {
+        virtualIndexRef.current = nextVirtualIndex;
+        setVirtualIndex(nextVirtualIndex);
+      }
     };
 
     const requestUpdate = () => {

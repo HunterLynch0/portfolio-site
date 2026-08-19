@@ -7,7 +7,7 @@ export const projects = [
     name: "VersionHandle",
     type: "Full-stack version control system",
     status: "Backend-heavy product build",
-    image: "/versionhandle-preview.png",
+    image: "/versionhandle-preview-display.png",
     description:
       "A GitHub-style version control and issue tracking project with authenticated repositories, issue workflows, and a React interface.",
     tech: ["Java", "Spring Boot", "PostgreSQL", "JWT", "React", "REST APIs"],
@@ -22,7 +22,7 @@ export const projects = [
     name: "IssueFlow",
     type: "Issue tracker",
     status: "Deployed full-stack app",
-    image: "/issueflow-preview-4.png",
+    image: "/issueflow-preview-4-display.png",
     description:
       "A full-stack issue tracker with repositories, issues, user assignment, permissions, Spring Security, JWT auth, PostgreSQL, and React.",
     tech: ["Java", "Spring Boot", "Spring Security", "JWT", "PostgreSQL", "React"],
@@ -37,7 +37,7 @@ export const projects = [
     name: "Java Image Editor",
     type: "Desktop image processing",
     status: "Graphics and algorithms",
-    image: "/andie-preview-1.png",
+    image: "/andie-preview-1-display.png",
     description:
       "A modular Java image editor with region selection, bilinear scaling, custom rendering, and image operations built around Graphics2D.",
     tech: ["Java", "Swing", "Graphics2D", "Gradle", "Image Processing"],

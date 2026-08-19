@@ -1,15 +1,15 @@
 .cursor-system {
+  --cursor-scale: 1;
+
   position: fixed;
   top: 0;
   left: 0;
   z-index: 30000;
   pointer-events: none;
   opacity: 0;
-  transform: translate3d(var(--cursor-x, 50vw), var(--cursor-y, 50vh), 0) translate(-50%, -50%);
+  transform: translate3d(var(--cursor-x, 50vw), var(--cursor-y, 50vh), 0) translate(-50%, -50%) scale(var(--cursor-scale));
   transition:
     opacity 0.18s ease,
-    width 0.18s ease,
-    height 0.18s ease,
     border-color 0.18s ease,
     background 0.18s ease;
   will-change: transform, opacity;
@@ -81,14 +81,14 @@
 }
 
 .cursor-system-core.is-active {
-  width: 10px;
-  height: 10px;
+  --cursor-scale: 1.43;
+
   background: var(--green);
 }
 
 .cursor-system-ring.is-active {
-  width: 56px;
-  height: 56px;
+  --cursor-scale: 1.47;
+
   border-color: rgba(var(--green-rgb), 0.72);
   background:
     radial-gradient(circle, rgba(var(--green-rgb), 0.11) 0 18%, transparent 19%),

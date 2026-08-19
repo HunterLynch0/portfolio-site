@@ -1,17 +1,30 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { FaExternalLinkAlt, FaGithub } from "react-icons/fa";
 import "../styles/ProjectCard.css";
 
 function ProjectCard({ project, index, total, isActive, style }) {
   const cardRef = useRef(null);
+  const frameRef = useRef(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const rectRef = useRef(null);
   const liveLabel = project.liveLabel ?? "Live Demo";
 
-  const handlePointerMove = (event) => {
+  useEffect(() => (
+    () => {
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+      }
+    }
+  ), []);
+
+  const updateTilt = () => {
+    frameRef.current = null;
+
     if (!isActive || !cardRef.current) return;
 
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width - 0.5;
-    const y = (event.clientY - rect.top) / rect.height - 0.5;
+    const rect = rectRef.current ?? cardRef.current.getBoundingClientRect();
+    const x = (pointerRef.current.x - rect.left) / rect.width - 0.5;
+    const y = (pointerRef.current.y - rect.top) / rect.height - 0.5;
 
     cardRef.current.style.setProperty("--tilt-x", `${(-y * 7).toFixed(2)}deg`);
     cardRef.current.style.setProperty("--tilt-y", `${(x * 8).toFixed(2)}deg`);
@@ -19,8 +32,30 @@ function ProjectCard({ project, index, total, isActive, style }) {
     cardRef.current.style.setProperty("--shine-y", `${((y + 0.5) * 100).toFixed(1)}%`);
   };
 
+  const handlePointerEnter = () => {
+    rectRef.current = cardRef.current?.getBoundingClientRect() ?? null;
+  };
+
+  const handlePointerMove = (event) => {
+    if (!isActive || !cardRef.current) return;
+
+    pointerRef.current.x = event.clientX;
+    pointerRef.current.y = event.clientY;
+
+    if (frameRef.current === null) {
+      frameRef.current = window.requestAnimationFrame(updateTilt);
+    }
+  };
+
   const resetTilt = () => {
     if (!cardRef.current) return;
+
+    rectRef.current = null;
+
+    if (frameRef.current !== null) {
+      window.cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
 
     cardRef.current.style.setProperty("--tilt-x", "0deg");
     cardRef.current.style.setProperty("--tilt-y", "0deg");
@@ -37,6 +72,7 @@ function ProjectCard({ project, index, total, isActive, style }) {
       style={style}
       aria-label={`${project.name}, project ${index + 1} of ${total}`}
       aria-current={isActive ? "true" : undefined}
+      onPointerEnter={handlePointerEnter}
       onPointerMove={handlePointerMove}
       onPointerLeave={resetTilt}
     >
