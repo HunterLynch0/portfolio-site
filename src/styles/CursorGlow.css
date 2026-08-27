@@ -6,6 +6,7 @@
   left: 0;
   z-index: 30000;
   pointer-events: none;
+  contain: layout style paint;
   opacity: 0;
   transform: translate3d(var(--cursor-x, 50vw), var(--cursor-y, 50vh), 0) translate(-50%, -50%) scale(var(--cursor-scale));
   transition:

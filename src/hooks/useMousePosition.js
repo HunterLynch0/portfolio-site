@@ -34,8 +34,6 @@ function useMousePosition() {
       pointer.x += (pointer.targetX - pointer.x) * 0.18;
       pointer.y += (pointer.targetY - pointer.y) * 0.18;
 
-      document.documentElement.style.setProperty("--glow-x", `${pointer.x.toFixed(1)}px`);
-      document.documentElement.style.setProperty("--glow-y", `${pointer.y.toFixed(1)}px`);
       document.documentElement.style.setProperty("--cursor-x", `${pointer.x.toFixed(1)}px`);
       document.documentElement.style.setProperty("--cursor-y", `${pointer.y.toFixed(1)}px`);
 
@@ -73,8 +71,15 @@ function useMousePosition() {
     };
 
     const handlePointerMove = (event) => {
-      pointerRef.current.targetX = event.clientX;
-      pointerRef.current.targetY = event.clientY;
+      const pointer = pointerRef.current;
+
+      pointer.targetX = event.clientX;
+      pointer.targetY = event.clientY;
+
+      if (!pointer.visible) {
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+      }
 
       const active = event.target instanceof Element
         ? Boolean(event.target.closest(interactiveCursorSelector))
@@ -98,6 +103,11 @@ function useMousePosition() {
       if (frameId !== null) {
         window.cancelAnimationFrame(frameId);
       }
+
+      document.documentElement.style.removeProperty("--cursor-x");
+      document.documentElement.style.removeProperty("--cursor-y");
+      document.documentElement.style.removeProperty("--glow-x");
+      document.documentElement.style.removeProperty("--glow-y");
     };
   }, [prefersReducedMotion]);
 
