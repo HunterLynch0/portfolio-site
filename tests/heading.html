@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Heading interaction verification</title>
+    <link rel="icon" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <output
+      id="qa-status"
+      style="
+        position: fixed;
+        bottom: 8px;
+        left: 8px;
+        z-index: 99;
+        background: #252522;
+        color: white;
+        padding: 8px;
+        font: 12px Arial;
+      "
+      >Checking heading…</output
+    >
+    <script type="module">
+      const mode = new URLSearchParams(location.search).get("mode");
+      const nativeMatch = window.matchMedia.bind(window);
+      if (mode === "reduced" || mode === "touch")
+        window.matchMedia = (query) => {
+          if (
+            (mode === "reduced" && query.includes("prefers-reduced-motion")) ||
+            (mode === "touch" && query.includes("pointer: fine"))
+          )
+            return {
+              matches: mode === "reduced",
+              media: query,
+              addEventListener() {},
+              removeEventListener() {},
+            };
+          return nativeMatch(query);
+        };
+      await import("/src/main.jsx");
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      while (!document.querySelector(".magnetic-letters")) await wait(50);
+      await document.fonts.ready;
+      await wait(300);
+      const h = document.querySelector("#hero-title"),
+        output = document.querySelector("#qa-status");
+      const before = h.getBoundingClientRect();
+      const range = document.createRange();
+      const word = h.querySelector(".magnetic-line").firstChild;
+      range.setStart(word, 2);
+      range.setEnd(word, 3);
+      const box = range.getBoundingClientRect();
+      const x = box.x + box.width / 2 + 18,
+        y = box.y + box.height / 2;
+      const send = (type, pointerType = "mouse") =>
+        h.dispatchEvent(
+          new PointerEvent(type, {
+            pointerType,
+            clientX: x,
+            clientY: y,
+            bubbles: true,
+          }),
+        );
+      const failures = [];
+      const check = (ok, message) => {
+        if (!ok) failures.push(message);
+      };
+      send("pointermove");
+      await wait(600);
+      if (mode === "reduced" || mode === "touch")
+        check(!h.classList.contains("is-magnetic"), "disabled preference");
+      else {
+        check(h.classList.contains("is-magnetic"), "mouse activates");
+        const matrices = [
+          ...h.querySelectorAll(".magnetic-letters > span"),
+        ].map((e) => new DOMMatrix(getComputedStyle(e).transform));
+        check(
+          matrices.every(
+            (m) =>
+              Math.hypot(m.m41, m.m42) <= 5.01 && m.m43 >= 0 && m.m43 <= 6.01,
+          ),
+          "translation/depth bounds",
+        );
+        check(
+          matrices.filter((m) => m.m43 > 0.7).length <= 4 &&
+            matrices.some((m) => m.m43 > 2),
+          "localized falloff",
+        );
+        const after = h.getBoundingClientRect();
+        check(
+          before.x === after.x &&
+            before.y === after.y &&
+            before.width === after.width &&
+            before.height === after.height,
+          "stable heading layout",
+        );
+        send("pointerleave");
+        await wait(1000);
+        check(!h.classList.contains("is-magnetic"), "returns to original text");
+        const originals = [...h.querySelectorAll(".magnetic-line")].flatMap(
+          (line) => {
+            const walker = document.createTreeWalker(
+                line,
+                NodeFilter.SHOW_TEXT,
+              ),
+              positions = [];
+            while (walker.nextNode())
+              for (let i = 0; i < walker.currentNode.length; i++) {
+                range.setStart(walker.currentNode, i);
+                range.setEnd(walker.currentNode, i + 1);
+                positions.push(range.getBoundingClientRect().toJSON());
+              }
+            return positions;
+          },
+        );
+        check(
+          [...h.querySelectorAll(".magnetic-letters > span")].every(
+            (glyph, i) => {
+              range.selectNodeContents(glyph);
+              const box = range.getBoundingClientRect();
+              return (
+                Math.abs(box.x - originals[i].x) < 0.1 &&
+                Math.abs(box.y - originals[i].y) < 0.1
+              );
+            },
+          ),
+          "preserved glyph origins and baseline",
+        );
+        send("pointermove", "touch");
+        await wait(100);
+        check(!h.classList.contains("is-magnetic"), "touch events ignored");
+        send("pointermove");
+        await wait(100);
+        document.querySelector('[aria-label="Pause system motion"]').click();
+        await wait(100);
+        check(!h.classList.contains("is-magnetic"), "pause clears motion");
+      }
+      check(
+        h.getAttribute("aria-label") === "Hunter Lynch.",
+        "accessible heading name",
+      );
+      check(
+        h.querySelector(".magnetic-letters").getAttribute("aria-hidden") ===
+          "true",
+        "decorative letters hidden from assistive technology",
+      );
+      if (mode === "visual") {
+        document.querySelector('[aria-label="Resume system motion"]').click();
+        await wait(100);
+        send("pointermove");
+      }
+      output.textContent = failures.length
+        ? `FAIL: ${failures.join(", ")}`
+        : `PASS: ${mode || "mouse"} heading interaction, bounds, layout and accessibility.`;
+    </script>
+  </body>
+</html>

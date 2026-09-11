@@ -310,7 +310,7 @@ export function createSystemGeometry(compact = false) {
         [0, 0.03, 0],
       );
     } else if (data.id === "about") {
-      // Layered architectural prism with a recessed, geometric profile relief.
+      // Layered prism with a symmetrical, front-facing head-and-shoulders relief.
       const identity = (geometry, material, position) => {
         geometry.translate(...position);
         parts.add(geometry, material, [0, 0.17, 0], [-0.5, 0, 0]);
@@ -320,23 +320,22 @@ export function createSystemGeometry(compact = false) {
       identity(
         relief(
           [
-            [-0.16, 0.19],
-            [-0.14, 0.13],
-            [-0.07, 0.085],
-            [-0.07, 0.015],
-            [-0.12, -0.045],
-            [-0.13, -0.12],
-            [-0.09, -0.18],
-            [0.015, -0.2],
-            [0.085, -0.155],
-            [0.09, -0.095],
-            [0.145, -0.035],
-            [0.095, -0.02],
-            [0.09, 0.055],
-            [0.04, 0.075],
-            [0.04, 0.115],
-            [0.145, 0.16],
-            [0.16, 0.19],
+            [-0.17, 0.19],
+            [-0.155, 0.12],
+            [-0.055, 0.065],
+            [-0.045, 0.025],
+            [-0.08, -0.02],
+            [-0.095, -0.1],
+            [-0.07, -0.17],
+            [-0.035, -0.195],
+            [0.035, -0.195],
+            [0.07, -0.17],
+            [0.095, -0.1],
+            [0.08, -0.02],
+            [0.045, 0.025],
+            [0.055, 0.065],
+            [0.155, 0.12],
+            [0.17, 0.19],
           ],
           0.018,
         ).rotateY(Math.PI),
@@ -344,10 +343,16 @@ export function createSystemGeometry(compact = false) {
         [0, 0.127, 0],
       );
     } else if (data.id === "contact") {
-      // Slim envelope with an inset face and a raised folded triangular flap.
-      parts.add(plate(0.69, 0.46, 0.07, 0.025), "graphite", [0, 0.065, 0]);
-      parts.add(plate(0.65, 0.42, 0.018, 0.02), "silver", [0, 0.113, 0]);
-      parts.add(
+      // Face the camera in landscape orientation without rotating the base.
+      const envelope = (geometry, material, position) => {
+        geometry.translate(...position);
+        geometry.translate(0, -0.065, 0);
+        geometry.rotateX(0.65);
+        parts.add(geometry, material, [0, 0.12, 0], [0, -1.26, 0]);
+      };
+      envelope(plate(0.69, 0.46, 0.07, 0.025), "graphite", [0, 0.065, 0]);
+      envelope(plate(0.65, 0.42, 0.018, 0.02), "silver", [0, 0.113, 0]);
+      envelope(
         relief(
           [
             [-0.31, -0.19],
@@ -359,7 +364,7 @@ export function createSystemGeometry(compact = false) {
         "graphite",
         [0, 0.14, 0],
       );
-      parts.add(
+      envelope(
         relief(
           [
             [-0.28, -0.19],

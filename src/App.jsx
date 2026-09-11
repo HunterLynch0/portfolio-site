@@ -1,4 +1,5 @@
 import { useState } from "react";
+import MagneticHeading from "./components/MagneticHeading";
 import PortfolioSystem from "./components/PortfolioSystem";
 import Arrow from "./components/Arrow";
 import About from "./components/About";
@@ -42,12 +43,7 @@ function App() {
           <div className="hero-composition">
             <div className="hero-copy">
               <p className="hero-role">Software Engineering Student</p>
-              <h1 id="hero-title">
-                <span>Hunter</span>
-                <span>
-                  Lynch<span className="name-period">.</span>
-                </span>
-              </h1>
+              <MagneticHeading paused={paused} />
               <p className="hero-study">
                 Computer Science + Mathematics
                 <br />

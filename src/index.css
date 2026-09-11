@@ -2040,3 +2040,36 @@ img {
 .dialog-gallery-versionhandle .dialog-image {
   height: clamp(240px, 48vw, 540px);
 }
+
+/* Original text owns layout; the measured letter layer is visible only in motion. */
+#hero-title {
+  position: relative;
+}
+.magnetic-letters {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+.magnetic-letters > span {
+  position: absolute;
+  display: block;
+  font: inherit;
+  letter-spacing: inherit;
+  white-space: pre;
+  transform-origin: center;
+}
+#hero-title.is-magnetic > .magnetic-line {
+  visibility: hidden;
+}
+#hero-title.is-magnetic > .magnetic-letters {
+  visibility: visible;
+}
+@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  #hero-title.is-magnetic > .magnetic-line {
+    visibility: visible;
+  }
+  #hero-title.is-magnetic > .magnetic-letters {
+    visibility: hidden;
+  }
+}
