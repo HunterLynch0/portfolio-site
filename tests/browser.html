@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio browser verification</title>
+    <link rel="icon" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <output
+      id="qa-status"
+      style="
+        position: fixed;
+        bottom: 8px;
+        left: 8px;
+        z-index: 99;
+        background: #252522;
+        color: white;
+        padding: 8px 12px;
+        font: 12px Arial;
+        max-width: calc(100% - 16px);
+      "
+      >Preparing verification…</output
+    >
+    <script type="module">
+      // Development-only fixtures: never included in Vite's production entry.
+      const mode = new URLSearchParams(location.search).get("mode");
+      const output = document.querySelector("#qa-status");
+      const nativeContext = HTMLCanvasElement.prototype.getContext;
+      let draws = 0;
+      if (mode === "no-webgl") {
+        HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+          return type.startsWith("webgl")
+            ? null
+            : nativeContext.call(this, type, ...args);
+        };
+      }
+      if (mode === "reduced") {
+        const nativeMatch = window.matchMedia.bind(window);
+        window.matchMedia = (query) =>
+          query.includes("prefers-reduced-motion")
+            ? {
+                matches: true,
+                media: query,
+                addEventListener() {},
+                removeEventListener() {},
+              }
+            : nativeMatch(query);
+      }
+      if (window.WebGL2RenderingContext) {
+        const drawElements = WebGL2RenderingContext.prototype.drawElements;
+        const drawArrays = WebGL2RenderingContext.prototype.drawArrays;
+        WebGL2RenderingContext.prototype.drawElements = function (...args) {
+          draws++;
+          return drawElements.apply(this, args);
+        };
+        WebGL2RenderingContext.prototype.drawArrays = function (...args) {
+          draws++;
+          return drawArrays.apply(this, args);
+        };
+      }
+      await import("/src/main.jsx");
+      const timer = setInterval(() => {
+        const stage = document.querySelector(".system-viewport");
+        if (!stage) return;
+        if (mode === "no-webgl" && !stage.querySelector("canvas")) {
+          const links = stage.querySelectorAll('a[href^="#"]');
+          output.textContent = `${links.length === 6 ? "PASS" : "FAIL"}: No WebGL — six working module links, static fallback, no canvas.`;
+          clearInterval(timer);
+        } else if (stage.classList.contains("is-ready")) {
+          clearInterval(timer);
+          if (mode === "idle") {
+            const run = async () => {
+              const wait = (ms) =>
+                new Promise((resolve) => setTimeout(resolve, ms));
+              await wait(300);
+              const rotation = Number(stage.dataset.coreRotation);
+              const yaw = stage.dataset.yaw;
+              const labels = [
+                ...stage.querySelectorAll(".hotspot-caption"),
+              ].map((e) => e.getBoundingClientRect().toJSON());
+              let low = Infinity,
+                high = 0;
+              const start = performance.now();
+              while (performance.now() - start < 4700) {
+                const scale = Number(stage.dataset.coreScale);
+                low = Math.min(low, scale);
+                high = Math.max(high, scale);
+                await wait(50);
+              }
+              const rotationChange =
+                Number(stage.dataset.coreRotation) - rotation;
+              const stableLabels = [
+                ...stage.querySelectorAll(".hotspot-caption"),
+              ].every((e, i) => {
+                const box = e.getBoundingClientRect();
+                return (
+                  Math.abs(box.x - labels[i].x) < 0.1 &&
+                  Math.abs(box.y - labels[i].y) < 0.1
+                );
+              });
+              const motionOK =
+                low < 1.005 &&
+                high > 1.067 &&
+                high <= 1.073 &&
+                rotationChange > 0.1 &&
+                rotationChange < 0.15;
+              document
+                .querySelector('[aria-label="Pause system motion"]')
+                .click();
+              await wait(200);
+              const before = draws,
+                frozen = stage.dataset.coreRotation,
+                scale = stage.dataset.coreScale;
+              await wait(1000);
+              const frozenOK =
+                draws === before &&
+                frozen === stage.dataset.coreRotation &&
+                scale === stage.dataset.coreScale;
+              output.textContent =
+                motionOK &&
+                frozenOK &&
+                stableLabels &&
+                yaw === stage.dataset.yaw
+                  ? "PASS: Quiet cage rotation, 7.2% breathing, stable labels/assembly, and paused motion with zero additional draws."
+                  : `FAIL: motion=${motionOK}, pause=${frozenOK}, labels=${stableLabels}, scale=${low}–${high}, rotation=${rotationChange}`;
+            };
+            run().catch((error) => {
+              output.textContent = `FAIL: ${error.message}`;
+            });
+          } else if (mode === "pulses" || mode === "labels") {
+            const run = async () => {
+              const wait = (ms) =>
+                new Promise((resolve) => setTimeout(resolve, ms));
+              const failures = [];
+              const check = (ok, label) => {
+                if (!ok) failures.push(label);
+              };
+              const captions = [...stage.querySelectorAll(".hotspot-caption")];
+              const inspectLabels = () => {
+                const boxes = captions.map((caption) =>
+                  caption.getBoundingClientRect(),
+                );
+                check(
+                  captions.every(
+                    (caption) =>
+                      getComputedStyle(caption).display !== "none" &&
+                      getComputedStyle(caption).opacity !== "0",
+                  ),
+                  "permanent labels",
+                );
+                check(
+                  boxes.every(
+                    (box) => box.left >= 0 && box.right <= innerWidth,
+                  ),
+                  "labels fit viewport",
+                );
+                check(
+                  boxes.every((a, i) =>
+                    boxes.every(
+                      (b, j) =>
+                        i === j ||
+                        a.right <= b.left ||
+                        a.left >= b.right ||
+                        a.bottom <= b.top ||
+                        a.top >= b.bottom,
+                    ),
+                  ),
+                  "label overlap",
+                );
+              };
+              await wait(300);
+              check(
+                stage.querySelector('[aria-current="true"]').hash === "#about",
+                "default About",
+              );
+              inspectLabels();
+              if (mode === "labels") {
+                for (const link of stage.querySelectorAll(".system-hotspot")) {
+                  link.focus({ preventScroll: true });
+                  await wait(1400);
+                  inspectLabels();
+                }
+              } else {
+                const yaw = stage.dataset.yaw;
+                const seen = [];
+                const started = performance.now();
+                while (performance.now() - started < 11500) {
+                  const count = Number(stage.dataset.pulseCount || 0);
+                  if (count > seen.length)
+                    seen.push({
+                      id: stage.dataset.signalModule,
+                      at: performance.now(),
+                      kind: stage.dataset.signalKind,
+                    });
+                  await wait(50);
+                }
+                check(
+                  seen.length >= 2 &&
+                    seen[0].id === "about" &&
+                    seen[1].id === "featured",
+                  "passive route cycle",
+                );
+                check(
+                  seen.every((pulse) => pulse.kind === "passive"),
+                  "passive packets",
+                );
+                check(
+                  seen
+                    .slice(1)
+                    .every(
+                      (pulse, index) =>
+                        pulse.at - seen[index].at >= 3000 &&
+                        pulse.at - seen[index].at <= 6000,
+                    ),
+                  "varied 3–6 second timing",
+                );
+                check(
+                  stage.dataset.yaw === yaw &&
+                    stage.querySelector('[aria-current="true"]').hash ===
+                      "#about",
+                  "passive preserves selection",
+                );
+                const pause = document.querySelector(
+                  '[aria-label="Pause system motion"]',
+                );
+                pause.click();
+                await wait(200);
+                let count = stage.dataset.pulseCount,
+                  before = draws;
+                await wait(5800);
+                check(
+                  stage.dataset.pulseCount === count && draws === before,
+                  "paused sleeps without pulses",
+                );
+                pause.click();
+                const originalHidden = Object.getOwnPropertyDescriptor(
+                  document,
+                  "hidden",
+                );
+                Object.defineProperty(document, "hidden", {
+                  configurable: true,
+                  value: true,
+                });
+                document.dispatchEvent(new Event("visibilitychange"));
+                before = draws;
+                await wait(5800);
+                check(
+                  stage.dataset.pulseCount === count && draws === before,
+                  "hidden sleeps without pulses",
+                );
+                if (originalHidden)
+                  Object.defineProperty(document, "hidden", originalHidden);
+                else delete document.hidden;
+                document.dispatchEvent(new Event("visibilitychange"));
+                document
+                  .querySelector("#contact")
+                  .scrollIntoView({ behavior: "instant" });
+                await wait(400);
+                before = draws;
+                await wait(5800);
+                check(
+                  stage.dataset.pulseCount === count && draws === before,
+                  "offscreen sleeps without pulses",
+                );
+                window.scrollTo({ top: 0, behavior: "instant" });
+                await wait(5900);
+                check(
+                  Number(stage.dataset.pulseCount) > Number(count),
+                  "pulses resume onscreen",
+                );
+                inspectLabels();
+              }
+              output.textContent = failures.length
+                ? `FAIL: ${[...new Set(failures)].join(", ")}`
+                : `PASS: ${mode === "labels" ? "Six labels remain visible, within the viewport and separated in every selection." : "Passive routes, timing, stable selection, pause, hidden, offscreen and resume."}`;
+            };
+            run().catch((error) => {
+              output.textContent = `FAIL: ${error.message}`;
+            });
+          } else if (mode === "gestures") {
+            const run = async () => {
+              const wait = (ms) =>
+                new Promise((resolve) => setTimeout(resolve, ms));
+              const canvas = stage.querySelector("canvas");
+              const rect = stage.getBoundingClientRect();
+              const origin = {
+                x: rect.x + rect.width / 2,
+                y: rect.y + rect.height / 2,
+              };
+              const send = (type, dx, dy, pointerType = "touch") =>
+                canvas.dispatchEvent(
+                  new PointerEvent(type, {
+                    bubbles: true,
+                    cancelable: true,
+                    pointerId: 21,
+                    isPrimary: true,
+                    pointerType,
+                    button: 0,
+                    buttons: type === "pointerup" ? 0 : 1,
+                    clientX: origin.x + dx,
+                    clientY: origin.y + dy,
+                  }),
+                );
+              const failures = [];
+              const check = (condition, label) => {
+                if (!condition) failures.push(label);
+              };
+              await wait(200);
+              const originalYaw = Number(stage.dataset.yaw);
+              const originalHash = location.hash;
+              send("pointerdown", 0, 0);
+              send("pointermove", 120, 4);
+              check(
+                stage.classList.contains("is-dragging"),
+                "touch drag starts",
+              );
+              send("pointerup", 120, 4);
+              const clickAllowed = stage
+                .querySelector("a")
+                .dispatchEvent(
+                  new MouseEvent("click", { bubbles: true, cancelable: true }),
+                );
+              check(
+                !clickAllowed && location.hash === originalHash,
+                "drag suppresses navigation",
+              );
+              await wait(1300);
+              check(
+                Math.abs(Number(stage.dataset.yaw) - originalYaw) > 0.1,
+                "horizontal touch rotates",
+              );
+              const horizontalYaw = Number(stage.dataset.yaw);
+              send("pointerdown", 0, 0);
+              send("pointermove", 3, 100);
+              check(
+                !stage.classList.contains("is-dragging"),
+                "vertical gesture remains native",
+              );
+              send("pointerup", 3, 100);
+              await wait(200);
+              check(
+                Math.abs(Number(stage.dataset.yaw) - horizontalYaw) < 0.005,
+                "vertical touch does not rotate",
+              );
+              send("pointerdown", 0, 0, "mouse");
+              send("pointermove", 5000, 5000, "mouse");
+              send("pointercancel", 5000, 5000, "mouse");
+              check(
+                !stage.classList.contains("is-dragging"),
+                "cancel clears drag",
+              );
+              await wait(1300);
+              check(
+                Math.abs(Number(stage.dataset.yaw)) < 0.73 &&
+                  Math.abs(Number(stage.dataset.pitch)) < 0.142,
+                "orientation limits",
+              );
+              stage
+                .querySelector('a[href="#skills-backend"]')
+                .focus({ preventScroll: true });
+              await wait(180);
+              check(
+                Number(stage.dataset.signal) > 0 &&
+                  Number(stage.dataset.signal) < 1,
+                "selection starts routing pulse",
+              );
+              await wait(1400);
+              check(
+                Number(stage.dataset.signal) === 1,
+                "routing pulse settles",
+              );
+              check(
+                stage.querySelector('[aria-current="true"]').hash ===
+                  "#skills-backend",
+                "selection remains accessible",
+              );
+              output.textContent = failures.length
+                ? `FAIL: ${failures.join(", ")}`
+                : "PASS: Simulated touch rotation, vertical gesture handling, drag-click suppression, cancellation, rotation limits and selection routing.";
+            };
+            run().catch((error) => {
+              output.textContent = `FAIL: ${error.message}`;
+            });
+          } else if (mode === "performance") {
+            const started = performance.now();
+            const canvas = stage.querySelector("canvas");
+            let frames = 0,
+              previous = started,
+              longest = 0;
+            const benchmark = (now) => {
+              frames++;
+              longest = Math.max(longest, now - previous);
+              previous = now;
+              const elapsed = now - started;
+              // Exercise the same pointer-input path a visitor uses, keeping the scene active.
+              const rect = stage.getBoundingClientRect();
+              canvas.dispatchEvent(
+                new PointerEvent("pointermove", {
+                  bubbles: true,
+                  pointerType: "mouse",
+                  clientX:
+                    rect.x +
+                    rect.width * (0.5 + Math.sin(elapsed / 360) * 0.35),
+                  clientY:
+                    rect.y +
+                    rect.height * (0.5 + Math.cos(elapsed / 430) * 0.25),
+                }),
+              );
+              if (elapsed < 3000) {
+                output.textContent = "Measuring active WebGL motion…";
+                requestAnimationFrame(benchmark);
+              } else {
+                output.textContent = `Active motion: ${Math.round(frames / (elapsed / 1000))} fps observed; ${canvas.dataset.drawCalls} draw calls; ${canvas.dataset.triangles} triangles. Longest frame: ${Math.round(longest)} ms.`;
+              }
+            };
+            requestAnimationFrame(benchmark);
+          } else {
+            // Allow layout/resize observers to deliver the initial static frames.
+            setTimeout(() => {
+              const initialDraws = draws;
+              output.textContent = "Measuring settled motion…";
+              setTimeout(
+                () => {
+                  output.textContent = `${draws === initialDraws ? "PASS" : "FAIL"}: ${mode === "reduced" ? "Reduced motion" : "Settled system"} — ${draws - initialDraws} additional draw calls in ${mode === "reduced" ? 6 : 1} seconds.`;
+                },
+                mode === "reduced" ? 6000 : 1000,
+              );
+            }, 700);
+          }
+        }
+      }, 100);
+    </script>
+  </body>
+</html>

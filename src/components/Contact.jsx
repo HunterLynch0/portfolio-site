@@ -1,68 +1,77 @@
-import { FaEnvelope, FaFileAlt, FaGithub, FaLinkedin } from "react-icons/fa";
-import { useSectionMotion } from "../hooks/useScrollProgress";
-import "../styles/Contact.css";
+import { sections } from "../data/sections";
+import Arrow from "./Arrow";
 
-function Contact({ contactLinks }) {
-  const sectionRef = useSectionMotion();
-
+export default function Contact() {
   return (
-    <section className="contact-section cinematic-section" id="contact" ref={sectionRef}>
-      <div className="contact-command glass-panel" data-reveal>
-        <div>
-          <p className="command-line">
-            <span className="prompt">$</span> initiate_contact()
-          </p>
-          <p className="eyebrow">Final Signal</p>
-          <h2>Open a channel.</h2>
+    <>
+      <section
+        className="contact-section section-pad"
+        id="contact"
+        aria-labelledby="contact-title"
+      >
+        <div className="contact-top" data-reveal>
+          <span className="eyebrow">
+            {sections.contact.number} / {sections.contact.label}
+          </span>
           <p>
-            I&apos;m open to software engineering internships, backend-heavy
-            product work, and teams where I can contribute to real systems while
-            continuing to learn quickly.
+            Open to software engineering internships
+            <br />
+            for the 2026/27 New Zealand summer.
           </p>
         </div>
-
-        <div className="contact-terminal" aria-hidden="true">
-          <span>recipient: Hunter Lynch</span>
-          <span>status: available_for_internship</span>
-          <span>signal: ready</span>
+        <a
+          className="contact-invitation"
+          href="mailto:hunterplynch07@gmail.com"
+          data-reveal
+        >
+          <h2 id="contact-title">
+            Let's get
+            <br />
+            <span>in touch.</span>
+          </h2>
+          <span className="contact-arrow">
+            <Arrow diagonal />
+          </span>
+        </a>
+        <div className="contact-bottom" data-reveal>
+          <a className="email-link" href="mailto:hunterplynch07@gmail.com">
+            hunterplynch07@gmail.com <Arrow diagonal />
+          </a>
+          <div className="contact-socials">
+            <a
+              href="https://github.com/HunterLynch0"
+              className="text-link"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub <Arrow diagonal />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/hunter-lynch-a6545938b/"
+              className="text-link"
+              target="_blank"
+              rel="noreferrer"
+            >
+              LinkedIn <Arrow diagonal />
+            </a>
+            <a
+              href="/Resume.pdf"
+              className="text-link"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Resume <Arrow diagonal />
+            </a>
+          </div>
         </div>
-
-        <div className="contact-actions">
-          <a className="button button-primary" href={contactLinks.email}>
-            <FaEnvelope aria-hidden="true" />
-            <span>Email</span>
-          </a>
-          <a
-            className="button"
-            href={contactLinks.github}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FaGithub aria-hidden="true" />
-            <span>GitHub</span>
-          </a>
-          <a
-            className="button"
-            href={contactLinks.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FaLinkedin aria-hidden="true" />
-            <span>LinkedIn</span>
-          </a>
-          <a
-            className="button"
-            href={contactLinks.resume}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FaFileAlt aria-hidden="true" />
-            <span>Resume</span>
-          </a>
-        </div>
-      </div>
-    </section>
+      </section>
+      <footer className="site-footer">
+        <p>© 2026 Hunter Lynch</p>
+        <p>Made with curiosity. Based in New Zealand.</p>
+        <a href="#home">
+          Back to top <Arrow />
+        </a>
+      </footer>
+    </>
   );
 }
-
-export default Contact;
